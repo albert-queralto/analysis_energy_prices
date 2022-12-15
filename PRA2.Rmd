@@ -73,8 +73,7 @@ library(pROC)
 final_dataset <- read.csv('final_dataset.csv', header = TRUE, sep=";")
 head(final_dataset)
 ```
-
-A més, la creació de regles d'associació necessita que les variables estiguin definides com a categòriques, per tant, comprovarem l'estructura del dataset per comprovar que és així:
+test
 
 # 3. Neteja de les dades
 
