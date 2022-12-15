@@ -1,0 +1,97 @@
+---
+title: 'Pràctica 2: Com Realitzar la neteja i l'anàlisi de dades?'
+author: "Esther Manzano i Albert Queraltó"
+date: '`r format(Sys.Date(),"%e de %B %Y")`'
+output:
+  html_document:
+    highlight: default
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# LLibreries
+
+Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(stats)
+library(lmtest)
+library(tidyverse)
+library(caret)
+library(scales)
+library(gridExtra)
+library(grid)
+library(corrplot)
+library(RColorBrewer)
+library(reshape2)
+library(ggpubr)
+library(Hmisc)
+library(PerformanceAnalytics)
+library(arulesCBA)
+library(arules)
+library(arulesViz)
+library(factoextra)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(cluster)
+library(factoextra)
+library(useful)
+library(GGally)
+library(flexclust)
+library(clValid)
+library(NbClust)
+library(ROCR)
+library(precrec)
+library(e1071)
+library(knitr)
+library(lubridate)
+library(stringr)
+library(psych)
+library(pROC)
+```
+
+# 1. Descripció del dataset
+
+
+# 2. Integració i selecció
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Carreguem els datasets, separador decimal
+final_dataset <- read.csv('final_dataset.csv', header = TRUE, sep=";")
+head(final_dataset)
+```
+
+A més, la creació de regles d'associació necessita que les variables estiguin definides com a categòriques, per tant, comprovarem l'estructura del dataset per comprovar que és així:
+
+# 3. Neteja de les dades
+
+## 3.1. Gestió de zeros o valors buits
+
+
+## 3.2. Identificació i gestió de valors extrems
+
+
+# 4. Anàlisi de les dades
+
+## 4.1. Selecció dels grups de dades a analitzar i tipus d'anàlisis que es portaran a terme
+
+## 4.2. Comprovació de la normalitat i homogeneïtat de la variància
+
+## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
+
+
+
+# Referències
