@@ -64,18 +64,146 @@ library(pROC)
 
 # 1. Descripció del dataset
 
+En els últims mesos, l'evolució del preu de l'energia elèctrica ha augmentat considerablement degut a la pujada dels preus dels combustibles fòssils, a la guerra d'Ucraïna i
+a l'especulació dels mercats. [1, 2] Això ha provocat una situació d'inflació insostenible per a moltes famílies i comerços, i ha posat de nou les energies renovables en el centre de la
+política energètica amb l'objectiu de reduir la dependència dels combustibles fòssils i redreçar la situació. [1-3] El preu de l'energia d'origen renovable ha disminuït
+considerablement en els últims anys si es compara amb altres fonts d'energia no renovables, com el gas natural o el carbó. [4] A més, hi ha una necessitat creixent de reduir la
+producció d'energia a partir de combustibles fòssils per a reduir les emissions de gasos d'efecte hivernacle a l'atmosfera i frenar el canvi climàtic. [5]
+
+Per aquest motiu i amb l'objectiu de promoure la producció d'energia renovable, es vol analitzar l'evolució del preu de l'energia elèctrica a Espanya i la producció d'energies
+renovables en el període de temps comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022. Aquesta informació, recopilada en la pràctica 1 fent servir webscraping a partir 
+de les dades obtingudes de la web https://www.esios.ree.es/es/, [6-7] ens permetrà:
+
+- Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període de temps mencionat.
+- Entendre la relació entre el preu de l'energia elèctrica i la producció d'energies renovables.
+- Discernir quina font d'energia renovable té un impacte més rellevant en el preu de l'energia.
+- Predir el preu de l'energia elèctrica a Espanya en funció de la producció d'energia renovable.
+
+
+#### Què més podem afegir? Mirar d'ampliar una mica. 
+#### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzilla per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable.
+
+
 
 # 2. Integració i selecció
 
+A continuació, carreguem les dades del dataset final que hem creat a la pràctica 1 en un dataframe. [6-7]
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Carreguem els datasets, separador decimal
+# Carreguem el dataset en un dataframe
 final_dataset <- read.csv('final_dataset.csv', header = TRUE, sep=";")
+
+```
+
+Renombrem les columnes del dataset per a que siguin més fàcils de tractar.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Renombrem el nom de les columnes
+colnames(final_dataset) <- c("date", "hour", "avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", "avg_price_ref_market_eur_mwh", "energy_total_mwh", 
+                              "energy_free_market_mwh", "energy_ref_market_mwh",
+                              "free_market_share_perc", "ref_market_share_perc", "renewable_generation_perc",
+                              "energy_source", "renewable_generation_mw")
+                              
+# Mostrem les primeres files del dataset
 head(final_dataset)
 ```
-test
 
 # 3. Neteja de les dades
+
+Abans de procedir a la gestió  de valors buits i extrems, es verificaràn tractaran les dades per assegurar que aquestes tenen el format adequat. En primer lloc, comprovem el tipus 
+de dades de cada columna del dataset:
+  
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Verifiquem el tipus de dades de cada columna del dataset
+sapply(final_dataset, class)
+```
+Es pot veure com totes les columnes són de tipus "character", malgrat que la majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ per a poder
+tractar-les com a numèriques. A més, també es preprocessaran les columnes "date" i "hour" per a poder tractar-les com a dates, com també la columna "energy_source".
+
+## 3.1 Processat de la columna "energy_source" i transformació a factor
+
+Tractem els valors de la columna "energy_source" per a que tinguin un nom adequat. És a dir, substituïm els valors de la columna "energy_source" pels següents noms:
+- "renewable generation (MW)" per "total".
+- "wind generation (MW)" per "wind".
+- "water generation (MW)" per "hydroelectric".
+- "solar generation (MW)" per "solar".
+- "nuclear generation (MW)" per "nuclear".
+- "thermorenewable generation (MW)" per "thermorenewable".
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Substituïm els valors de la columna "energy_source"
+final_dataset$energy_source <- gsub("renewable generation (MW)", "total", final_dataset$energy_source, fixed = TRUE)
+final_dataset$energy_source <- gsub("wind generation (MW)", "wind", final_dataset$energy_source, fixed = TRUE)
+final_dataset$energy_source <- gsub("water generation (MW)", "hydroelectric", final_dataset$energy_source, fixed = TRUE)
+final_dataset$energy_source <- gsub("solar generation (MW)", "solar", final_dataset$energy_source, fixed = TRUE)
+final_dataset$energy_source <- gsub("nuclear generation (MW)", "nuclear", final_dataset$energy_source, fixed = TRUE)
+final_dataset$energy_source <- gsub("thermorenewable generation (MW)", "thermorenewable", final_dataset$energy_source, fixed = TRUE)
+
+# Mostrem els valors de la columna "energy_source"
+unique(final_dataset$energy_source)
+
+# Transformem la columna "energy_source" a tipus factor
+final_dataset$energy_source <- as.factor(final_dataset$energy_source)
+
+# Verifiquem el tipus de dades de cada columna del dataset
+sapply(final_dataset, class)
+```
+
+## 3.2 Processat de la columnes "renewable_generation_perc" i "renewable_generation_mw"
+
+Les columnes "renewable_generation_perc" i "renewable_generation_mw" contenen les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests strings per a poder 
+tractar-les com a numèriques. També eliminarem el salt de línia ("\n") de la columna "renewable_generation_perc".
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Eliminem les unitats de les columnes "renewable_generation_perc" i "renewable_generation_mw"
+final_dataset$renewable_generation_perc <- gsub("%", "", final_dataset$renewable_generation_perc)
+final_dataset$renewable_generation_mw <- gsub("MW", "", final_dataset$renewable_generation_mw)
+
+# Eliminem els "\n" de la columna "renewable_generation_perc"
+final_dataset$renewable_generation_perc <- gsub("\n", "", final_dataset$renewable_generation_perc)
+
+# Eliminem els espais en blanc de totes les columnes
+final_dataset <- final_dataset %>% 
+  mutate_at(vars(date, hour, energy_source), funs(gsub(" ", "", .)))
+
+# Mostrem les primeres files del dataset
+head(final_dataset)
+```
+
+## 3.3 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
+
+A continuació, transformarem les columnes "date" i "hour" a tipus "date" i "time" respectivament, mentre que la columna "energy_source" es transformarà a tipus factor.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem les columnes "date" i "hour" a tipus "date" i "time" respectivament
+final_dataset$date <- as.Date(final_dataset$date, format = "%Y-%m-%d")
+final_dataset$hour <- as.POSIXct(final_dataset$hour, format = "%H:%M")
+
+
+
+# Comprovem que les columnes han estat transformades correctament
+head(final_dataset)
+```
+
+
+les columnes "avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", 
+"avg_price_ref_market_eur_mwh", "energy_total_mwh", "energy_free_market_mwh", "energy_ref_market_mwh", "free_market_share_perc", "ref_market_share_perc", "renewable_generation_perc"
+i "renewable_generation_mw" a tipus numèric. L
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem les columnes "avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", "avg_price_ref_market_eur_mwh", "energy_total_mwh", "energy_free_market_mwh", 
+# "energy_ref_market_mwh", "free_market_share_perc", "ref_market_share_perc", "renewable_generation_perc" i "renewable_generation_mw" a tipus numèric
+final_dataset$avg_total_price_eur_mwh <- as.numeric(final_dataset$avg_total_price_eur_mwh)
+final_dataset$avg_price_free_market_eur_mwh <- as.numeric(final_dataset$avg_price_free_market_eur_mwh)
+final_dataset$avg_price_ref_market_eur_mwh <- as.numeric(final_dataset$avg_price_ref_market_eur_mwh)
+final_dataset$energy_total_mwh <- as.numeric(final_dataset$energy_total_mwh)
+final_dataset$energy_free_market_mwh <- as.numeric(final_dataset$energy_free_market_mwh)
+final_dataset$energy_ref_market_mwh <- as.numeric(final_dataset$energy_ref_market_mwh)
+final_dataset$free_market_share_perc <- as.numeric(final_dataset$free_market_share_perc)
+final_dataset$ref_market_share_perc <- as.numeric(final_dataset$ref_market_share_perc)
+final_dataset$renewable_generation_perc <- as.numeric(final_dataset$renewable_generation_perc)
+final_dataset$renewable_generation_mw <- as.numeric(final_dataset$renewable_generation_mw)
+```
 
 ## 3.1. Gestió de zeros o valors buits
 
@@ -94,3 +222,24 @@ test
 
 
 # Referències
+
+[1] Alexis Romero, "La guerra a Ucraïna i la creixent inflació ressusciten el debat sobre la intervenció del mercat elèctric" (Público, 01/03/2022). 
+https://www.publico.es/public/encariment-preus-guerra-ucraina-i-creixent-inflacio-ressusciten-debat-intervencio-mercat-electric.html
+
+[2] Vicenç Batalla, "La UE frenarà la pujada de l'electricitat per la guerra" (El Punt Avui, 12/03/2022).
+https://www.elpuntavui.cat/politica/article/17-politica/2111814-la-ue-frenara-la-pujada-de-l-electricitat-per-la-guerra.html
+
+[3] elnacional.cat, "La situació actual de les energies renovables a Catalunya: què tenim i cap on anem?" (El Nacional, 06/06/2022).
+https://www.elnacional.cat/ca/branded/energies-renovables-catalunya-cap-anem_685709_102.html
+
+[4] Ourworldindata.org, "La caiguda del preu de l'electricitat a partir de fonts renovables" (Ourworldindata.org, 2022).
+https://ca.dsnsolar.com/info/the-price-decline-of-electricity-from-renewabl-70291585.html
+
+[5] naciodigital.cat, "Tindrem prou energia només amb les renovables?" (Nació Digital, 2022).
+https://www.naciodigital.cat/noticia/230097/canvi-climatic-tindrem-prou-energia-nomes-renovables
+
+[6] Esther Manzano i Albert Queraltó, "Webscraping of Energy Prices and Renewable Energy Production" (GitHub, 2022).
+https://github.com/albert-queralto/scraping-energy-prices-spain
+
+[7] Esther Manzano i Albert Queraltó, "Evolution of the price of electricity and the renewable energy production in Spain" (Zenodo, 2022).
+https://doi.org/10.5281/zenodo.7335618
