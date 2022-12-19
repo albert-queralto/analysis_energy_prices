@@ -12,10 +12,6 @@ output:
     toc: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 # LLibreries
 
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
@@ -60,6 +56,11 @@ library(lubridate)
 library(stringr)
 library(psych)
 library(pROC)
+library(xfun)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # 1. Descripció del dataset
