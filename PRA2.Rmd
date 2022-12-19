@@ -200,7 +200,7 @@ head(final_dataset)
 
 Finalment, transformem les columnes numèriques a tipus numèric.
 
-#### Nota: no funciona si faig servir mutate, però no acabo d'entendre el motiu. Cal mirar-ho.
+#### Nota: no funciona si faig servir mutate, però no acabo d'entendre el motiu. Cal mirar-ho perquè en principi el codi està bé. Potser cal afegir alguna opció.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem les columnes numèriques a tipus numèric
@@ -233,40 +233,41 @@ sapply(final_dataset, class)
 
 ## 3.4 Combinació de les columnes "date" i "hour" i tranformació a tipus "datetime"
 
-Afegir explicació..
+A continuació, es combinen les columnes "date" i "hour" en una sola columna "datetime" i es transforma a tipus "datetime".
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Transformem les columnes "date" i "hour" a tipus "date" i "time" respectivament
-final_dataset$date <- as.Date(final_dataset$date, format = "%Y-%m-%d")
-final_dataset$hour <- as.POSIXct(final_dataset$hour, format = "%H:%M")
+# Combinar les columnes "date" i "hour" en una sola columna "datetime"
+final_dataset <- final_dataset %>% 
+  mutate(datetime = paste(date, hour, sep = " "))
 
-
+# Transformar la columna "datetime" a tipus "datetime"
+final_dataset <- final_dataset %>% 
+  mutate(datetime = as.POSIXct(datetime, format = "%Y-%m-%d %H:%M"))
 
 # Comprovem que les columnes han estat transformades correctament
 head(final_dataset)
+tail(final_dataset)
 ```
 
-
-les columnes "avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", 
-"avg_price_ref_market_eur_mwh", "energy_total_mwh", "energy_free_market_mwh", "energy_ref_market_mwh", "free_market_share_perc", "ref_market_share_perc", "renewable_generation_perc"
-i "renewable_generation_mw" a tipus numèric. L
+Finalment, eliminarem les columnes "date" i "hour" ja que ja no ens seran útils.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Transformem les columnes "avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", "avg_price_ref_market_eur_mwh", "energy_total_mwh", "energy_free_market_mwh", 
-# "energy_ref_market_mwh", "free_market_share_perc", "ref_market_share_perc", "renewable_generation_perc" i "renewable_generation_mw" a tipus numèric
-final_dataset$avg_total_price_eur_mwh <- as.numeric(final_dataset$avg_total_price_eur_mwh)
-final_dataset$avg_price_free_market_eur_mwh <- as.numeric(final_dataset$avg_price_free_market_eur_mwh)
-final_dataset$avg_price_ref_market_eur_mwh <- as.numeric(final_dataset$avg_price_ref_market_eur_mwh)
-final_dataset$energy_total_mwh <- as.numeric(final_dataset$energy_total_mwh)
-final_dataset$energy_free_market_mwh <- as.numeric(final_dataset$energy_free_market_mwh)
-final_dataset$energy_ref_market_mwh <- as.numeric(final_dataset$energy_ref_market_mwh)
-final_dataset$free_market_share_perc <- as.numeric(final_dataset$free_market_share_perc)
-final_dataset$ref_market_share_perc <- as.numeric(final_dataset$ref_market_share_perc)
-final_dataset$renewable_generation_perc <- as.numeric(final_dataset$renewable_generation_perc)
-final_dataset$renewable_generation_mw <- as.numeric(final_dataset$renewable_generation_mw)
+# Eliminem les columnes "date" i "hour"
+final_dataset <- final_dataset %>% 
+  select(-date, -hour)
 ```
 
-## 3.1. Gestió de zeros o valors buits
+Comprovem que les columnes han estat eliminades correctament.
+
+#### Nota: en fer aquest pas, la columna datetime perd el valor de l'hora per les 00:00:00. Cal mirar-ho. Potser és cosa del meu IDE.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Comprovem que les columnes han estat eliminades correctament
+tail(final_dataset)
+```
+
+
+## 3.5. Gestió de zeros o valors buits
 
 Comprovem si hi ha valors nuls.
 
