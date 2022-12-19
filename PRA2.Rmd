@@ -133,12 +133,12 @@ Tractem els valors de la columna "energy_source" per a que tinguin un nom adequa
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Substituïm els valors de la columna "energy_source"
+final_dataset$energy_source <- gsub("thermorenewable generation (MW)", "thermorenewable", final_dataset$energy_source, fixed = TRUE)
 final_dataset$energy_source <- gsub("renewable generation (MW)", "total", final_dataset$energy_source, fixed = TRUE)
 final_dataset$energy_source <- gsub("wind generation (MW)", "wind", final_dataset$energy_source, fixed = TRUE)
 final_dataset$energy_source <- gsub("water generation (MW)", "hydroelectric", final_dataset$energy_source, fixed = TRUE)
 final_dataset$energy_source <- gsub("solar generation (MW)", "solar", final_dataset$energy_source, fixed = TRUE)
 final_dataset$energy_source <- gsub("nuclear generation (MW)", "nuclear", final_dataset$energy_source, fixed = TRUE)
-final_dataset$energy_source <- gsub("thermorenewable generation (MW)", "thermorenewable", final_dataset$energy_source, fixed = TRUE)
 
 # Mostrem els valors de la columna "energy_source"
 unique(final_dataset$energy_source)
