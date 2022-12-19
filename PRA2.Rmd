@@ -142,7 +142,9 @@ final_dataset$energy_source <- gsub("nuclear generation (MW)", "nuclear", final_
 
 # Mostrem els valors de la columna "energy_source"
 unique(final_dataset$energy_source)
+```
 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem la columna "energy_source" a tipus factor
 final_dataset$energy_source <- as.factor(final_dataset$energy_source)
 
@@ -173,7 +175,12 @@ head(final_dataset)
 
 ## 3.3 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
 
-A continuació, transformarem les columnes "date" i "hour" a tipus "date" i "time" respectivament, mentre que la columna "energy_source" es transformarà a tipus factor.
+
+
+
+## 3.4 Combinació de les columnes "date" i "hour" i tranformació a tipus "datetime"
+
+Afegir explicació..
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem les columnes "date" i "hour" a tipus "date" i "time" respectivament
