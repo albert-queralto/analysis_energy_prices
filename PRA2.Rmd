@@ -175,7 +175,60 @@ head(final_dataset)
 
 ## 3.3 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
 
+Eliminem els separadors de milers de les columnes numèriques i substituïm els separadors decimals per un punt.
 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Eliminem els separadors de milers de les columnes numèriques
+final_dataset <- final_dataset %>% 
+  mutate_at(vars(energy_total_mwh, energy_ref_market_mwh, 
+  energy_free_market_mwh, renewable_generation_mw), funs(gsub(".", "", ., fixed = TRUE)))
+
+# Eliminem els separadors de milers de les columnes numèriques
+final_dataset <- final_dataset %>% 
+  mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
+  avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
+  energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
+  renewable_generation_perc), funs(gsub(",", ".", ., fixed = TRUE)))
+```
+
+Mostrem el resultat de la transformació.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Mostrem les primeres files del dataset
+head(final_dataset)
+```
+
+Finalment, transformem les columnes numèriques a tipus numèric.
+
+#### Nota: no funciona si faig servir mutate, però no acabo d'entendre el motiu. Cal mirar-ho.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem les columnes numèriques a tipus numèric
+# final_dataset <- final_dataset %>% 
+#   mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
+#   avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
+#   energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
+#   renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
+final_dataset$avg_total_price_eur_mwh <- as.numeric(final_dataset$avg_total_price_eur_mwh)
+final_dataset$avg_price_ref_market_eur_mwh <- as.numeric(final_dataset$avg_price_ref_market_eur_mwh)
+final_dataset$avg_price_free_market_eur_mwh <- as.numeric(final_dataset$avg_price_free_market_eur_mwh)
+final_dataset$energy_total_mwh <- as.numeric(final_dataset$energy_total_mwh)
+final_dataset$energy_ref_market_mwh <- as.numeric(final_dataset$energy_ref_market_mwh)
+final_dataset$energy_free_market_mwh <- as.numeric(final_dataset$energy_free_market_mwh)
+final_dataset$free_market_share_perc <- as.numeric(final_dataset$free_market_share_perc)
+final_dataset$ref_market_share_perc <- as.numeric(final_dataset$ref_market_share_perc)
+final_dataset$renewable_generation_perc <- as.numeric(final_dataset$renewable_generation_perc)
+final_dataset$renewable_generation_mw <- as.numeric(final_dataset$renewable_generation_mw)
+```
+
+Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de tractar posteriorment.
+
+A continuació, comprovem el tipus de dades de cada columna del dataset.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Verifiquem el tipus de dades de cada columna del dataset
+sapply(final_dataset, class)
+```
 
 
 ## 3.4 Combinació de les columnes "date" i "hour" i tranformació a tipus "datetime"
@@ -214,6 +267,13 @@ final_dataset$renewable_generation_mw <- as.numeric(final_dataset$renewable_gene
 ```
 
 ## 3.1. Gestió de zeros o valors buits
+
+Comprovem si hi ha valors nuls.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Comprovem si hi ha valors nuls
+sum(is.na(final_dataset))
+```
 
 
 ## 3.2. Identificació i gestió de valors extrems
