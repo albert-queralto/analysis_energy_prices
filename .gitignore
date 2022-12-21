@@ -160,6 +160,7 @@ data/
 *.pth
 *.pdf
 *.csv
+*.txt
 
 .ipynb_checkpoints
 .DS_Store
