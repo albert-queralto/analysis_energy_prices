@@ -80,19 +80,27 @@ de les dades obtingudes de la web https://www.esios.ree.es/es/, [6-7] ens permet
 - Discernir quina font d'energia renovable té un impacte més rellevant en el preu de l'energia.
 - Predir el preu de l'energia elèctrica a Espanya en funció de la producció d'energia renovable.
 
-
+### Cal afegir descripció del dataset AEMET
 #### Què més podem afegir? Mirar d'ampliar una mica. 
-#### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzilla per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable.
+#### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzill per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable.
 
 
 
 # 2. Integració i selecció
 
-A continuació, carreguem les dades del dataset final que hem creat a la pràctica 1 en un dataframe. [6-7]
+## 2.1. Càrrega, preprocessat i selecció del dataset ESIOS
+
+### 2.1.1. Càrrega de les dades i anàlisi a alt nivell
+
+Carreguem les dades del dataset ESIOS que hem creat a la pràctica 1 en un dataframe. 
+Aquestes dades són les obtingudes a partir de la web https://www.esios.ree.es/es/ 
+[6-7] i contenen la informació de l'evolució del preu de l'energia elèctrica a 
+Espanya i la producció d'energies renovables en el període de temps comprès entre 
+l'1 de Novembre del 2020 al 31 d'Octubre del 2022.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Carreguem el dataset en un dataframe
-final_dataset <- read.csv('final_dataset.csv', header = TRUE, sep=";")
+# Carreguem els datasets en un dataframe
+esios_dataset <- read.csv('data/esios_dataset.csv', header = TRUE, sep=";")
 
 ```
 
@@ -100,30 +108,39 @@ Renombrem les columnes del dataset per a que siguin més fàcils de tractar.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Renombrem el nom de les columnes
-colnames(final_dataset) <- c("date", "hour", "avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", "avg_price_ref_market_eur_mwh", "energy_total_mwh", 
+colnames(esios_dataset) <- c("date", "hour", "avg_total_price_eur_mwh", 
+                              "avg_price_free_market_eur_mwh", 
+                              "avg_price_ref_market_eur_mwh", "energy_total_mwh", 
                               "energy_free_market_mwh", "energy_ref_market_mwh",
-                              "free_market_share_perc", "ref_market_share_perc", "renewable_generation_perc",
-                              "energy_source", "renewable_generation_mw")
+                              "free_market_share_perc", "ref_market_share_perc", 
+                              "renewable_generation_perc", "energy_source", 
+                              "renewable_generation_mw")
                               
 # Mostrem les primeres files del dataset
-head(final_dataset)
+head(esios_dataset)
+
+# Mostrem les dimensions del dataset
+dim(esios_dataset)
 ```
 
-# 3. Neteja de les dades
-
-Abans de procedir a la gestió  de valors buits i extrems, es verificaràn tractaran les dades per assegurar que aquestes tenen el format adequat. En primer lloc, comprovem el tipus 
-de dades de cada columna del dataset:
+Com podem veure, el dataset conté 13 columnes i 105120 files. Tot seguit, 
+comprovem el tipus de dades de cada columna del dataset:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
-sapply(final_dataset, class)
+sapply(esios_dataset, class)
 ```
-Es pot veure com totes les columnes són de tipus "character", malgrat que la majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ per a poder
-tractar-les com a numèriques. A més, també es preprocessaran les columnes "date" i "hour" per a poder tractar-les com a dates, com també la columna "energy_source".
 
-## 3.1 Processat de la columna "energy_source" i transformació a factor
+Es pot veure com totes les columnes són de tipus "character", malgrat que la 
+majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ 
+per poder tractar-les com a numèriques. A més, també es preprocessaran les 
+columnes "date" i "hour" per a poder tractar-les com a dates, com també la 
+columna "energy_source".
 
-Tractem els valors de la columna "energy_source" per a que tinguin un nom adequat. És a dir, substituïm els valors de la columna "energy_source" pels següents noms:
+### 2.1.2. Processat de la columna "energy_source" i transformació a factor
+
+Tractem els valors de la columna "energy_source" per a que tinguin un nom adequat. 
+És a dir, substituïm els valors de la columna "energy_source" pels següents noms:
 - "renewable generation (MW)" per "total".
 - "wind generation (MW)" per "wind".
 - "water generation (MW)" per "hydroelectric".
@@ -132,139 +149,325 @@ Tractem els valors de la columna "energy_source" per a que tinguin un nom adequa
 - "thermorenewable generation (MW)" per "thermorenewable".
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+
 # Substituïm els valors de la columna "energy_source"
-final_dataset$energy_source <- gsub("thermorenewable generation (MW)", "thermorenewable", final_dataset$energy_source, fixed = TRUE)
-final_dataset$energy_source <- gsub("renewable generation (MW)", "total", final_dataset$energy_source, fixed = TRUE)
-final_dataset$energy_source <- gsub("wind generation (MW)", "wind", final_dataset$energy_source, fixed = TRUE)
-final_dataset$energy_source <- gsub("water generation (MW)", "hydroelectric", final_dataset$energy_source, fixed = TRUE)
-final_dataset$energy_source <- gsub("solar generation (MW)", "solar", final_dataset$energy_source, fixed = TRUE)
-final_dataset$energy_source <- gsub("nuclear generation (MW)", "nuclear", final_dataset$energy_source, fixed = TRUE)
+esios_dataset$energy_source <- gsub("thermorenewable generation (MW)", 
+                                    "thermorenewable", 
+                                    esios_dataset$energy_source, fixed = TRUE)
+esios_dataset$energy_source <- gsub("renewable generation (MW)", 
+                                    "total", 
+                                    esios_dataset$energy_source, fixed = TRUE)
+esios_dataset$energy_source <- gsub("wind generation (MW)", 
+                                    "wind", 
+                                    esios_dataset$energy_source, fixed = TRUE)
+esios_dataset$energy_source <- gsub("water generation (MW)", 
+                                    "hydroelectric", 
+                                    esios_dataset$energy_source, fixed = TRUE)
+esios_dataset$energy_source <- gsub("solar generation (MW)", 
+                                    "solar", 
+                                    esios_dataset$energy_source, fixed = TRUE)
+esios_dataset$energy_source <- gsub("nuclear generation (MW)", 
+                                    "nuclear", 
+                                    esios_dataset$energy_source, fixed = TRUE)
 
 # Mostrem els valors de la columna "energy_source"
-unique(final_dataset$energy_source)
+unique(esios_dataset$energy_source)
 ```
+
+A continuació, transformem la columna "energy_source" a tipus factor.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem la columna "energy_source" a tipus factor
-final_dataset$energy_source <- as.factor(final_dataset$energy_source)
+esios_dataset$energy_source <- as.factor(esios_dataset$energy_source)
 
 # Verifiquem el tipus de dades de cada columna del dataset
-sapply(final_dataset, class)
+sapply(esios_dataset, class)
 ```
 
-## 3.2 Processat de la columnes "renewable_generation_perc" i "renewable_generation_mw"
+### 2.1.3. Processat de la columnes "renewable_generation_perc" i "renewable_generation_mw"
 
-Les columnes "renewable_generation_perc" i "renewable_generation_mw" contenen les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests strings per a poder 
-tractar-les com a numèriques. També eliminarem el salt de línia ("\n") de la columna "renewable_generation_perc".
+Les columnes "renewable_generation_perc" i "renewable_generation_mw" contenen 
+les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests 
+strings per a poder tractar-les com a numèriques. També eliminarem el salt de 
+línia ("\n") de la columna "renewable_generation_perc".
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les unitats de les columnes "renewable_generation_perc" i "renewable_generation_mw"
-final_dataset$renewable_generation_perc <- gsub("%", "", final_dataset$renewable_generation_perc)
-final_dataset$renewable_generation_mw <- gsub("MW", "", final_dataset$renewable_generation_mw)
+esios_dataset$renewable_generation_perc <- gsub("%", "", 
+                                        esios_dataset$renewable_generation_perc)
+esios_dataset$renewable_generation_mw <- gsub("MW", "", 
+                                        esios_dataset$renewable_generation_mw)
 
 # Eliminem els "\n" de la columna "renewable_generation_perc"
-final_dataset$renewable_generation_perc <- gsub("\n", "", final_dataset$renewable_generation_perc)
+esios_dataset$renewable_generation_perc <- gsub("\n", "", 
+                                        esios_dataset$renewable_generation_perc)
 
 # Eliminem els espais en blanc de totes les columnes
-final_dataset <- final_dataset %>% 
+esios_dataset <- esios_dataset %>% 
   mutate_at(vars(date, hour, energy_source), funs(gsub(" ", "", .)))
 
 # Mostrem les primeres files del dataset
-head(final_dataset)
+head(esios_dataset)
 ```
 
-## 3.3 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
+### 2.1.4 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
 
-Eliminem els separadors de milers de les columnes numèriques i substituïm els separadors decimals per un punt.
+Eliminem els separadors de milers de les columnes numèriques i substituïm els 
+separadors decimals per un punt.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem els separadors de milers de les columnes numèriques
-final_dataset <- final_dataset %>% 
+esios_dataset <- esios_dataset %>% 
   mutate_at(vars(energy_total_mwh, energy_ref_market_mwh, 
-  energy_free_market_mwh, renewable_generation_mw), funs(gsub(".", "", ., fixed = TRUE)))
+  energy_free_market_mwh, renewable_generation_mw), funs(gsub(".", "", ., 
+                                                                fixed = TRUE)))
 
 # Eliminem els separadors de milers de les columnes numèriques
-final_dataset <- final_dataset %>% 
+esios_dataset <- esios_dataset %>% 
   mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
   avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
   energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
   renewable_generation_perc), funs(gsub(",", ".", ., fixed = TRUE)))
+
+# Mostrem les primeres files del dataset
+head(esios_dataset)
 ```
 
-Mostrem el resultat de la transformació.
+Finalment, transformem les columnes que haurien de ser numèriques a aquest tipus.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem les columnes numèriques a tipus numèric
+esios_dataset <- esios_dataset %>% 
+  mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
+  avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
+  energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
+  renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
+```
+
+Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de 
+tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna 
+del dataset.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Verifiquem el tipus de dades de cada columna del dataset
+sapply(esios_dataset, class)
+
+# Mostrem les primeres files del dataset
+head(esios_dataset)
+```
+
+### 2.1.5. Calculem el promig de totes les columnes numèriques en funció de la data
+
+Calculem el promig de totes les columnes numèriques del dataset tenint en compte
+els valors de les columnes *date* i *energy_source*. El promig es calcula perquè
+el dataset AEMET que tractarem posteriorment té una granularitat menor, és a dir,
+les dades estan agrupades per dia i no per dia i hora.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Calculem el promig de totes les columnes numèriques del dataset
+esios_dataset <- esios_dataset %>% 
+  group_by(date, energy_source) %>% 
+  summarise_all(funs(mean(., na.rm = FALSE)))
+
+# Mostrem les primeres files del dataset
+head(esios_dataset)
+```
+
+### 2.1.6. Eliminem les columnes que no ens interessin
+
+Eliminem les columnes que no ens interessin per aquesta anàlisi. En aquest cas,
+les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*,
+*energy_total_mwh*, *free_market_share_perc*, *ref_market_share_perc*, 
+*energy_source* i *renewable_generation_mw*.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Eliminem les columnes que no ens interessin
+esios_dataset <- esios_dataset %>% 
+  select(date, avg_total_price_eur_mwh, energy_total_mwh, free_market_share_perc, 
+        ref_market_share_perc, energy_source, renewable_generation_mw)
+
+# Mostrem les primeres files del dataset
+head(esios_dataset)
+```
+
+### 2.1.7. Calcular percentatge d'energia renovable respecte el total
+
+Calculem el percentatge d'energia renovable (*renewable_generation_mw*) respecte 
+el total de la generació (*energy_total_mwh*).  
+  
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Calculem el percentatge d'energia renovable respecte el total
+esios_dataset <- esios_dataset %>% 
+  mutate(renewable_generation_perc = renewable_generation_mw / energy_total_mwh * 100)
+
+# Mostrem les primeres files del dataset
+head(esios_dataset)
+```
+
+### 2.1.8. Transformar la columna *date* i energy_source* al format correcte
+
+Transformem la columna *date* i *energy_source* al format correcte, és a dir,
+tipus data i factor, respectivament.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem la columna date al format correcte
+esios_dataset <- esios_dataset %>% 
+  mutate(date = as.Date(date, format = "%Y-%m-%d"))
+
+# Transformem la columna energy_source al format correcte
+esios_dataset <- esios_dataset %>% 
+  mutate(energy_source = as.factor(energy_source))
+
+# Verifiquem el tipus de dades de cada columna del dataset
+sapply(esios_dataset, class)
+
+# Mostrem les primeres files del dataset
+head(esios_dataset)
+```
+
+## 2.2. Càrrega, preprocessat i selecció del dataset AEMET
+
+### 2.2.1. Càrrega de les dades i anàlisi a alt nivell
+
+Carreguem les dades del dataset AEMET en un dataframe. Aquestes dades s'han 
+obtingut de la web https://opendata.aemet.es/ utilitzant l'API proporcionada.
+La informació continguda al dataset va des de l'1 d'Octubre del 2020 al 30 de 
+Novembre del 2022. A més, el dataset està format per la data d'adquisició 
+dels registres, el número identificador de l'estació meteorològica, el seu nom,
+la provincia, l'altitud sobre el nivell del mar (en metres), la temperatura
+mitjana diària (ºC), la precipitació diària (en mm), la temperatura mínima (ºC),
+l'hora i minuts d'adquisició de la temperatura mínima, la temperatura màxima (ºC),
+l'hora i minuts d'adquisició de la temperatura màxima, la direcció de la ratxa
+de vent màxima, la velocitat mitjana del vent (m/s), l'hora de la ratxa màxima,
+l'insolació (en hores), la pressió màxima (hPa), l'hora de la pressió màxima, la
+pressió mínima (hPa), l'hora de la pressió mínima.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Carreguem les dades del dataset AEMET
+aemet_dataset <- read.csv("data/aemet_dataset.csv", sep = ";", header = TRUE, 
+                          stringsAsFactors = FALSE)
+```
+
+Renombrem les columnes del dataset per a que siguin més fàcils de tractar.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Renombrem el nom de les columnes
+colnames(aemet_dataset) <- c("date", "climate_indicator", "station_name", 
+                              "province", "height_above_sea", "avg_daily_temp", 
+                              "daily_precipitation", "min_daily_temp",
+                              "hour_min_temp", "max_daily_temp", 
+                              "hour_max_temp", "max_wind_direction", 
+                              "avg_wind_speed", "max_wind_speed",
+                              "hour_max_wind_speed", "insolation",
+                              "max_pressure", "hour_max_pressure",
+                              "min_pressure", "hour_min_pressure")
+
+# Mostrem les primeres files del dataset
+head(aemet_dataset)
+
+# Verificació del tipus de dades
+sapply(aemet_dataset, class)
+```
+
+### 2.2.2. Eliminem les columnes innecessàries
+
+Eliminem les columnes que no ens interessin per aquesta anàlisi. En aquest cas,
+les columnes que es volen conservar són: *date*, *province*, *avg_daily_temp*, 
+*daily_precipitation*, *min_daily_temp*, *max_daily_temp*, *avg_wind_speed*, 
+*max_wind_speed*, *insolation*, *max_pressure*, *hour_min_pressure*.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Eliminem les columnes que no ens interessin
+aemet_dataset <- aemet_dataset %>% 
+  select(date, province, avg_daily_temp, daily_precipitation, min_daily_temp, 
+          max_daily_temp, avg_wind_speed, max_wind_speed, insolation, 
+          max_pressure, min_pressure)
+
+# Mostrem les primeres files del dataset
+head(aemet_dataset)
+```
+
+### 2.2.3. Processat dels separadors decimals i transformació a columnes numèriques
+
+Com que els separadors decimals són diferents als que utilitza R,
+hem de processar-los per tal de poder-los transformar a columnes numèriques.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Processat dels separadors decimals
+aemet_dataset <- aemet_dataset %>% 
+  mutate_at(vars(avg_daily_temp, daily_precipitation, min_daily_temp, 
+  max_daily_temp, avg_wind_speed, max_wind_speed, insolation, max_pressure, 
+  min_pressure), funs(gsub(",", ".", ., fixed = TRUE)))
+
+# Transformem les columnes a numèriques
+aemet_dataset <- aemet_dataset %>% 
+  mutate_at(vars(avg_daily_temp, daily_precipitation, min_daily_temp, 
+  max_daily_temp, avg_wind_speed, max_wind_speed, insolation, max_pressure, 
+  min_pressure), funs(as.numeric(.)))
+
+# Verificació del tipus de dades
+sapply(aemet_dataset, class)
+
+# Mostrem les primeres files del dataset
+head(aemet_dataset)
+```
+
+### 2.2.4. Transformació de la columna data al tipus correcte
+
+Transformem la columna *date* al tipus de dades correcte, és a dir, data.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem la columna date al tipus de dades correcte
+aemet_dataset <- aemet_dataset %>% 
+  mutate(date = as.Date(date, format = "%Y-%m-%d"))
+
+# Verificació del tipus de dades
+sapply(aemet_dataset, class)
+```
+
+### 2.2.5. Transformació de la columna province a tipus factor
+
+Transformem la columna *province* al tipus de dades factor.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Transformem la columna province al tipus de dades factor
+aemet_dataset <- aemet_dataset %>% 
+  mutate(province = as.factor(province))
+
+# Verificació del tipus de dades
+sapply(aemet_dataset, class)
+```
+
+## 2.3 Unió dels dos datasets
+
+Unim els dos datasets per tal de poder fer l'anàlisi de les dades. La columna
+que utilitzarem és la data
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Unim els dos datasets
+final_dataset <- left_join(esios_dataset, aemet_dataset, by = c("date"))
+
 # Mostrem les primeres files del dataset
 head(final_dataset)
 ```
 
-Finalment, transformem les columnes numèriques a tipus numèric.
+## 2.4 Guardar datset final en un fitxer csv
 
-#### Nota: no funciona si faig servir mutate, però no acabo d'entendre el motiu. Cal mirar-ho perquè en principi el codi està bé. Potser cal afegir alguna opció.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Transformem les columnes numèriques a tipus numèric
-# final_dataset <- final_dataset %>% 
-#   mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
-#   avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
-#   energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
-#   renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
-final_dataset$avg_total_price_eur_mwh <- as.numeric(final_dataset$avg_total_price_eur_mwh)
-final_dataset$avg_price_ref_market_eur_mwh <- as.numeric(final_dataset$avg_price_ref_market_eur_mwh)
-final_dataset$avg_price_free_market_eur_mwh <- as.numeric(final_dataset$avg_price_free_market_eur_mwh)
-final_dataset$energy_total_mwh <- as.numeric(final_dataset$energy_total_mwh)
-final_dataset$energy_ref_market_mwh <- as.numeric(final_dataset$energy_ref_market_mwh)
-final_dataset$energy_free_market_mwh <- as.numeric(final_dataset$energy_free_market_mwh)
-final_dataset$free_market_share_perc <- as.numeric(final_dataset$free_market_share_perc)
-final_dataset$ref_market_share_perc <- as.numeric(final_dataset$ref_market_share_perc)
-final_dataset$renewable_generation_perc <- as.numeric(final_dataset$renewable_generation_perc)
-final_dataset$renewable_generation_mw <- as.numeric(final_dataset$renewable_generation_mw)
-```
-
-Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de tractar posteriorment.
-
-A continuació, comprovem el tipus de dades de cada columna del dataset.
+Guardem el dataset final en un fitxer csv.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Verifiquem el tipus de dades de cada columna del dataset
-sapply(final_dataset, class)
+# Guardem el dataset final en un fitxer csv
+write.csv(final_dataset, file = "data/final_dataset.csv", row.names = FALSE)
 ```
 
 
-## 3.4 Combinació de les columnes "date" i "hour" i tranformació a tipus "datetime"
+# 3. Neteja de les dades
 
-A continuació, es combinen les columnes "date" i "hour" en una sola columna "datetime" i es transforma a tipus "datetime".
+Abans de procedir a la gestió  de valors buits i extrems, 
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Combinar les columnes "date" i "hour" en una sola columna "datetime"
-final_dataset <- final_dataset %>% 
-  mutate(datetime = paste(date, hour, sep = " "))
 
-# Transformar la columna "datetime" a tipus "datetime"
-final_dataset <- final_dataset %>% 
-  mutate(datetime = as.POSIXct(datetime, format = "%Y-%m-%d %H:%M"))
 
-# Comprovem que les columnes han estat transformades correctament
-head(final_dataset)
-tail(final_dataset)
-```
 
-Finalment, eliminarem les columnes "date" i "hour" ja que ja no ens seran útils.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les columnes "date" i "hour"
-final_dataset <- final_dataset %>% 
-  select(-date, -hour)
-```
-
-Comprovem que les columnes han estat eliminades correctament.
-
-#### Nota: en fer aquest pas, la columna datetime perd el valor de l'hora per les 00:00:00. Cal mirar-ho. Potser és cosa del meu IDE.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem que les columnes han estat eliminades correctament
-tail(final_dataset)
-```
 
 
 ## 3.5. Gestió de zeros o valors buits
@@ -273,7 +476,7 @@ Comprovem si hi ha valors nuls.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem si hi ha valors nuls
-sum(is.na(final_dataset))
+sum(is.na(esios_dataset))
 ```
 
 
