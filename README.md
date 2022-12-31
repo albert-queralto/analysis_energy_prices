@@ -12,9 +12,9 @@ This repository contains the code, data and documentation done in the framework
 of a practice exercise for the class *Tipologia i cicle de vida de les dades*
 from the *Master in Data Science* of the *Universitat Oberta de Catalunya*.
 
-The exercise consisted in analyzing data using R language from different sources: AEMET's API 
-dataset (Agencia Estatal de Meteorologia) and together with ESIOS dataset (Operador del Sistema 
-de Red Eléctrica)*.
+The exercise consisted in analyzing data using R language from different sources: *AEMET*'s API 
+dataset (Agencia Estatal de Meteorologia) and together with *ESIOS* dataset (Operador del Sistema 
+de Red Eléctrica).
 
 **Disclaimer:** Express consent has been given by *Red Eléctrica de España*, the
 source and propietary of the data, to perform this exercise and under no
