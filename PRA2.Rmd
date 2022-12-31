@@ -19,12 +19,12 @@ Primer de tot, carregarem algunes llibreries que podríem necessitar per crear e
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
-              "caret", "corrplot", "ggpubr", "Hmisc", "PerformanceAnalytics", 
-              "factoextra", "rpart", "rpart.plot", "factoextra", "useful", 
+              "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
               "pROC", "zoo")
 
-install.packages(packages)
+# Comentar si no cal instal·lar les llibreries
+# install.packages(packages, repos="https://cran.rediris.es/")
 lapply(packages, require, character.only = TRUE)
 ```
 
@@ -442,6 +442,14 @@ ggplot(esios_dataset, aes(y = energy_source)) +
 
 # Afegir descripció
 
+Finalment, eliminem la columna *renewable_generation_mw*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Eliminar la columna renewable_generation_mw
+esios_dataset <- esios_dataset %>% 
+  select(-renewable_generation_mw)
+```
+
 ### 2.1.11. Crear intervals per *renewable_generation_perc*
 
 La generació d'energia renovable té valors en tot el rang de percentatges, per tant,
@@ -717,10 +725,10 @@ colSums(is.na(aemet_dataset))
 
 Cada provincia pot tenir més d'una estació meteorològica. Així doncs, per tal de
 simplificar l'anàlisi de les dades, es procedirà a calcular el promig de les
-variables numèriques en base a les columnes *date* i *province*. En aquest 
+variables numèriques en base a les columnes *date* i *province*. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Agrupem les dades per data i província i calculem els promitjos
+# Agrupem les dades per data i calculem els promitjos
 aemet_dataset <- aemet_dataset %>% 
   group_by(date, province) %>% 
   summarise_all(funs(mean(., na.rm = FALSE)))
@@ -832,45 +840,6 @@ ggplot(aemet_dataset, aes(x = avg_daily_temp)) +
 ```
 
 # Afegir explicació del que es veu. Com és l'histograma? distribució normal, biax, etc.
-
-Sembla que les variables *min_daily_temp* i *max_daily_temp* són variables de les
-quals es podria prescindir. Per tant, podem mirar de discretitzar la variable
-*avg_daily_temp* fent servir rangs de 10 graus de temperatura. Per això,
-representem la distribució estadística de les dades:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Distribució estadística de la temperatura mitjana
-summary(aemet_dataset$avg_daily_temp)
-```
-
-Es pot veure com el valor mínim és d'uns -8 ºC, mentre que el màxim és de 36 ºC.
-Per tant, podem discretitzar la variable *avg_daily_temp* en 5 intervals:
-    
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Discretització de la temperatura mitjana
-aemet_dataset <- aemet_dataset %>% 
-  mutate(avg_daily_temp_bin = cut(avg_daily_temp, 
-                                  breaks = c(-Inf, 0, 10, 20, 30, Inf), 
-                                  labels = c("Below 0", "0-10", "10-20", 
-                                                          "20-30", "Above 30"),
-                                  include.lowest = TRUE, right = FALSE)
-```
-
-Tot seguit, representem la temperatura mitjana discretitzada:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de barres de la temperatura mitjana
-ggplot(aemet_dataset, aes(x = avg_daily_temp_bin)) + 
-  geom_bar(fill = "blue", color = "black", alpha = 0.5) +
-  scale_x_discrete(name = "Temperatura mitjana") +
-  scale_y_continuous(name = "Nombre d'observacions") +
-  labs(title = "Distribució de la temperatura mitjana") +
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir descripció
 
 ### 2.2.10. Representació de la precipitació i la insolació
 
@@ -1068,15 +1037,47 @@ summary(is.na(final_dataset))
 
 Generalment, es consideren com a outliers tots aquells valors que es troben molt
 lluny dels valors de la resta de la mostra. En una distribució normal, això
-equival a $\pm 3\sigma$ respecte el valor promig.
+equival a $\pm 3\sigma$ respecte el valor promig. Per això, podem normalitzar
+les columnes numèriques i representar els boxplots:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Identificació de valors extrems de les variables numèriques
-final_dataset %>%
-  select(-date) %>%
-  mutate_if(is.numeric, ~ ifelse(abs(.) > 3 * sd(.), NA, .)) %>%
-  summarise_all(funs(sum(is.na(.))))
+# Creem variable amb columnes numèriques
+num_vars <- c("avg_total_price_eur_mwh", "energy_total_mwh", 
+              "renewable_generation_perc", "avg_daily_temp", 
+              "daily_precipitation", "avg_wind_speed", 
+              "max_wind_speed", "insolation", "avg_pressure")
+
+# Subset del dataset amb les columnes numèriques i sense la data
+subset_final <- final_dataset %>% select(num_vars)
+
+# Eliminem la columna de la data
+subset_final <- subset_final[,-1]
+
+# # Estandarditzem les columnes numèriques entre -1 i 1
+normalized_data <- scale(subset_final, center = mean_num_vars, scale = sd_num_vars)
+
+# Convertim les columnes no atòmiques a vectors atòmics
+normalized_data <- as.data.frame(lapply(normalized_data, as.vector))
+head(normalized_data)
+# # Boxplots de les variables estandarditzades cada columna un boxplot
+# normalized_data %>% 
+#   gather(key = "variable", value = "value") %>% 
+#   ggplot(aes(x = variable, y = value)) +
+#   geom_boxplot() +
+#   theme_bw() +
+#   theme(text = element_text(size = 30))
 ```
+
+
+
+<!-- normalized_data %>% 
+  gather(key = "variable", value = "value") %>% 
+  ggplot(aes(x = variable, y = value)) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(text = element_text(size = 30)) -->
+
+
 
 # 4. Anàlisi de les dades
 
