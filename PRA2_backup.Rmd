@@ -1,5 +1,5 @@
 ---
-title: "Pràctica 2: Com realitzar la neteja i l'anàlisi de dades?"
+title: "Pràctica 2: Com Realitzar la neteja i l'anàlisi de dades?"
 author: "Esther Manzano i Albert Queraltó"
 date: '`r format(Sys.Date(),"%e de %B %Y")`'
 output:
@@ -12,21 +12,19 @@ output:
     toc: yes
 ---
 
-# LLibreries test
+# LLibreries
 
-Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
-els diferents models, analitzar-los i generar gràfics.
+Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi
-# exploratòria de les dades
+# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
               "pROC", "zoo", "reshape2")
 
-# Comentar si no cal instal·lar les llibreries --> Per esborrar?
-# install.packages(packages, repos="https://cran.rediris.es/")  --> Per esborrar?
+# Comentar si no cal instal·lar les llibreries
+# install.packages(packages, repos="https://cran.rediris.es/")
 lapply(packages, require, character.only = TRUE)
 ```
 
@@ -48,37 +46,26 @@ natural o el carbó. [4] A més, hi ha una necessitat creixent de reduir la
 producció d'energia a partir de combustibles fòssils per a reduir les emissions 
 de gasos d'efecte hivernacle a l'atmosfera i frenar el canvi climàtic. [5]
 
-Per aquest motiu i amb l'objectiu de promoure la producció i utilització de 
-l'energia renovable, es vol analitzar l'evolució del preu de l'energia elèctrica
-a Espanya i la producció general d'energies renovables en el període de temps 
-comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022 en la mateixa zona geogràfica. 
+Per aquest motiu i amb l'objectiu de promoure la producció d'energia renovable, 
+es vol analitzar l'evolució del preu de l'energia elèctrica a Espanya i la 
+producció d'energies renovables en el període de temps comprès entre l'1 de 
+Novembre del 2020 al 31 d'Octubre del 2022. Aquesta informació es va recopilar 
+en la pràctica 1 fent servir webscraping a partir de les dades obtingudes de la 
+web https://www.esios.ree.es/es/ (*dataset ESIOS*). [6-7] D'altra banda, la 
+meteorologia influeix significativament en la producció de les energies
+renovables. Per exemple, els dies assolellats tindran una elevada producció 
+d'origen fotovoltaïc, l'energia eòlica serà representativa en els dies ventosos 
+o la quantitat de precipitació contribuirà a omplir els embassaments que permeten 
+generar energia hidroelèctrica. Així doncs, per completar l'anàlisi, també s'ha 
+decidit utilitzar dades climàtiques diàries obtingudes de la web 
+https://opendata.aemet.es/ (*dataset AEMET*). Entre altres, hi ha dades de 
+temperatures, precipitació, vent, insolació, etc., en el mateix rang de dates 
+que el dataset d'ESIOS. La combinació d'ambdós datasets ens permetrà:
 
-Aquesta informació es va recopilar en la primera pràctica mitjançant la tècnica de 
-webscraping a partir de les dades obtingudes de la web https://www.esios.ree.es/es/ 
-(*dataset ESIOS*), per a la qual es va demanar permís explícit per a tractar i
-publicar el resultat obtingut amb aquestes dades. El resultat de la primera
-pràctica es pot trobar publicat a: https://github.com/albert-queralto/scraping-energy-prices-spain [6-7] 
-
-D'altra banda, cal mencionar també com la meteorologia influeix significativament
-en la producció de les energies renovables. Per exemple, es preveu que els dies 
-assolellats tinguin una elevada producció d'origen fotovoltaïc, així com l'energia 
-eòlica serà representativa en els dies ventosos o la quantitat de precipitació 
-contribuirà a omplir els embassaments que permeten generar energia hidroelèctrica. 
-
-Així doncs, per completar l'anàlisi, també s'ha decidit utilitzar dades climàtiques 
-diàries obtingudes de la web https://opendata.aemet.es/ (*dataset AEMET*). 
-Entre altres, hi ha dades de temperatures, precipitació, vent, insolació, etc., 
-en el mateix rang de dates que el dataset d'ESIOS. La combinació d'ambdós datasets 
-ens permetrà assolir els objectius següents marcats per a aquesta pràctica:
-
-- Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període
-  de temps mencionat.
-- Entendre la relació entre el preu de l'energia elèctrica, la producció
-  d'energies renovables i la influència de la meteorologia.
-- Discernir quina font d'energia renovable té un impacte més rellevant en el preu
-  de l'energia.
-- Predir el preu de l'energia elèctrica a Espanya en funció de la producció
-  d'energia renovable.
+- Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període de temps mencionat.
+- Entendre la relació entre el preu de l'energia elèctrica, la producció d'energies renovables i la influència de la meteorologia.
+- Discernir quina font d'energia renovable té un impacte més rellevant en el preu de l'energia.
+- Predir el preu de l'energia elèctrica a Espanya en funció de la producció d'energia renovable.
 
 #### Què més podem afegir? Mirar d'ampliar una mica. 
 #### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzill per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable si tenim espai
@@ -120,8 +107,8 @@ head(esios_dataset)
 dim(esios_dataset)
 ```
 
-Com podem veure, el dataset conté dades estructurades en 13 columnes i 105120 files. Tot seguit, 
-comprovem el tipus de dades i les principals característiques de cada columna del dataset.
+Com podem veure, el dataset conté 13 columnes i 105120 files. Tot seguit, 
+comprovem el tipus de dades de cada columna del dataset:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
@@ -129,54 +116,19 @@ sapply(esios_dataset, class)
 ```
 
 Es pot veure com totes les columnes són de tipus "character", malgrat que la 
-majoria d'elles haurien de ser de tipus numèric per a portar a terme l'anàlisi pràctic correctament. Caldrà doncs fer un preprocessat previ 
+majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ 
 per poder tractar-les com a numèriques. A més, també es preprocessaran les 
-columnes "date" i "hour" per a poder tractar-les com a dates, així com també la 
+columnes "date" i "hour" per a poder tractar-les com a dates, com també la 
 columna "energy_source".
 
-Presentem un resum del dataset:
+Finalment, presentem un resum del dataset:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Taula resum que representa les principals característiques de les diferents variables
+# Resum del dataset
 summary(esios_dataset)
 ```
 
-Seguidament busquem valors nuls en el nostre dataset:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Valors nuls
-is.null(esios_dataset)
-```
-
-Observem zero valors nuls en el dataset. Podem afirmar doncs que el dataset d'ESIOS que vàrem extreure en la primera pràctica és complert. 
-
-Finalment, explorem el dataset mitjançant algunes estadístiques inicials:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Preview del dataset
-str(esios_dataset)
-```
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Compute the variance
-var(esios_dataset$energy_source)
-# Compute the standard deviation =
-# square root of th variance
-sd(esios_dataset$energy_source)
-
-
-summary(esios_dataset$energy.free.market..MWh.)
-
-summary(esios_dataset, digits = 1)
-
-
-sapply(esios_dataset[, -5], mean)
-
-```
-
-
-# Volia afegir estadístiques però pel fet que són characters encara en aquesta fase crec que no fa massa servei que agreguem res. He fet algunes proves. Et sembla bé si afegim les estadístiques més endavant? Jo treuria aquesta última part.
-
+# Afegir explicació (com són les estadístiques de les dades, valors nuls)
 
 ### 2.1.2. Processat d'*energy_source*
 
@@ -223,8 +175,7 @@ strings per a poder tractar-les com a numèriques. També eliminarem el salt de
 línia ("\n") de la columna "renewable_generation_perc".
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les unitats de les columnes "renewable_generation_perc" i 
-# "renewable_generation_mw"
+# Eliminem les unitats de les columnes "renewable_generation_perc" i "renewable_generation_mw"
 esios_dataset$renewable_generation_perc <- gsub("%", "", 
                                         esios_dataset$renewable_generation_perc)
 esios_dataset$renewable_generation_mw <- gsub("MW", "", 
@@ -446,8 +397,7 @@ ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) 
 
 ### 2.1.10. Representem les variables
 
-# Afegir gràfiques d'altres dades també separant pels grups de variables 
-# categòriques i analitzar els resultats
+# Afegir gràfiques d'altres dades també separant pels grups de variables categòriques i analitzar els resultats
 
 Representem l'histograma de la variable *avg_total_price_eur_mwh*:
 
@@ -840,10 +790,10 @@ Hi ha tres categories principals:
   amb núvols, precipitació i temps generalment inestable. Es caracteritza per
   pressions a nivell de superfície per sota de 1010 hPa.
 
-- Pressió normal (*Normal*): aquesta es refereix a una superfície de pressió que 
-  està a la mateixa alçada que el nivell de referència. La pressió normal està
-  associada amb temps "normal". Es caracteritza per pressions a nivell de
-  superfície al voltant de 1013.25 hPa.
+- Pressió normal (*Normal*): aquesta es refereix a una superfície de pressió que està a la
+  mateixa alçada que el nivell de referència. La pressió normal està associada
+  amb temps "normal". Es caracteritza per pressions a nivell de superfície al
+  voltant de 1013.25 hPa.
 
 - Alta pressió (*Anticyclone*): els sistemes d'altes pressions estan associats
   amb temps estable i clar. Es caracteritza per pressions a nivell de superfície
@@ -888,8 +838,7 @@ ggplot(aemet_dataset, aes(x = avg_daily_temp)) +
   theme(plot.width = 200, plot.height = 100)
 ```
 
-# Afegir explicació del que es veu. Com és l'histograma? distribució normal, 
-# biax, etc.
+# Afegir explicació del que es veu. Com és l'histograma? distribució normal, biax, etc.
 
 ### 2.2.10. Representació de la precipitació i la insolació
 
@@ -1055,8 +1004,7 @@ Es pot veure com el dataset final té gairebé 228.000 files i 16 columnes.
 D'aquestes, tenim una variable tipus *date*, 9 variables numèriques i 6
 variables categòriques.
 
-# Nota: revisant el dataset, veig que potser podríem fer un promig per províncies
-# per evitar duplicats en les dades provinents del dataset ESIOS
+# Nota: revisant el dataset, veig que potser podríem fer un promig per províncies per evitar duplicats en les dades provinents del dataset ESIOS
 
 ## 2.4 Guardar dataset final en un fitxer csv
 
@@ -1158,30 +1106,23 @@ sinó per la naturalesa de les dades i no els eliminarem de les nostres anàlisi
 
 # Referències
 
-[1] Alexis Romero, "La guerra a Ucraïna i la creixent inflació ressusciten el 
-debat sobre la intervenció del mercat elèctric" (Público, 01/03/2022). 
+[1] Alexis Romero, "La guerra a Ucraïna i la creixent inflació ressusciten el debat sobre la intervenció del mercat elèctric" (Público, 01/03/2022). 
 https://www.publico.es/public/encariment-preus-guerra-ucraina-i-creixent-inflacio-ressusciten-debat-intervencio-mercat-electric.html
 
-[2] Vicenç Batalla, "La UE frenarà la pujada de l'electricitat per la guerra" 
-(El Punt Avui, 12/03/2022).
+[2] Vicenç Batalla, "La UE frenarà la pujada de l'electricitat per la guerra" (El Punt Avui, 12/03/2022).
 https://www.elpuntavui.cat/politica/article/17-politica/2111814-la-ue-frenara-la-pujada-de-l-electricitat-per-la-guerra.html
 
-[3] elnacional.cat, "La situació actual de les energies renovables a Catalunya: 
-què tenim i cap on anem?" (El Nacional, 06/06/2022).
+[3] elnacional.cat, "La situació actual de les energies renovables a Catalunya: què tenim i cap on anem?" (El Nacional, 06/06/2022).
 https://www.elnacional.cat/ca/branded/energies-renovables-catalunya-cap-anem_685709_102.html
 
-[4] Ourworldindata.org, "La caiguda del preu de l'electricitat a partir de fonts
-renovables" (Ourworldindata.org, 2022).
+[4] Ourworldindata.org, "La caiguda del preu de l'electricitat a partir de fonts renovables" (Ourworldindata.org, 2022).
 https://ca.dsnsolar.com/info/the-price-decline-of-electricity-from-renewabl-70291585.html
 
-[5] naciodigital.cat, "Tindrem prou energia només amb les renovables?" 
-(Nació Digital, 2022).
+[5] naciodigital.cat, "Tindrem prou energia només amb les renovables?" (Nació Digital, 2022).
 https://www.naciodigital.cat/noticia/230097/canvi-climatic-tindrem-prou-energia-nomes-renovables
 
-[6] Esther Manzano i Albert Queraltó, "Webscraping of Energy Prices and Renewable
-Energy Production" (GitHub, 2022).
+[6] Esther Manzano i Albert Queraltó, "Webscraping of Energy Prices and Renewable Energy Production" (GitHub, 2022).
 https://github.com/albert-queralto/scraping-energy-prices-spain
 
-[7] Esther Manzano i Albert Queraltó, "Evolution of the price of electricity and
-the renewable energy production in Spain" (Zenodo, 2022).
+[7] Esther Manzano i Albert Queraltó, "Evolution of the price of electricity and the renewable energy production in Spain" (Zenodo, 2022).
 https://doi.org/10.5281/zenodo.7335618
