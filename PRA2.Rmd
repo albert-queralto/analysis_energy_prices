@@ -80,8 +80,16 @@ ens permetrà assolir els objectius següents marcats per a aquesta pràctica:
 - Predir el preu de l'energia elèctrica a Espanya en funció de la producció
   d'energia renovable.
 
+<<<<<<< HEAD
 #### Què més podem afegir? Mirar d'ampliar una mica. 
 #### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzill per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable si tenim espai
+=======
+<<<<<<< HEAD
+=======
+#### Què més podem afegir? Mirar d'ampliar una mica. 
+#### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzill per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable si tenim espai
+>>>>>>> 1beb218d3c7ad10346c3e5a05c045ab4b1e1d703
+>>>>>>> b26f9b1 (changes in sections 1 and 2)
 
 
 # 2. Integració i selecció
