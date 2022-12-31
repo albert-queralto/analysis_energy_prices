@@ -395,7 +395,40 @@ head(esios_dataset)
 sapply(esios_dataset, class)
 ```
 
-### 2.1.10. Representem histogrames de les variables
+Representem l'histograma de la variable *renewable_generation_mw* en funció
+de la variable *energy_source*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Representar l'histograma per renewable_generation_mw en funció de energy_source
+ggplot(esios_dataset, aes(x = renewable_generation_mw, fill = energy_source)) + 
+  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  labs(x = "Generació d'energia renovable (MW)", 
+        y = "Freqüència") + 
+  theme_bw() + 
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
+```
+
+# Afegir descripció
+
+Representem l'histograma de la variable *renewable_generation_perc* en funció
+de la variable *energy_source*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Representar l'histograma per renewable_generation_perc en funció de energy_source
+ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) + 
+  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 10)) +
+  labs(x = "Percentatge de generació", 
+        y = "Freqüència") + 
+  theme_bw() + 
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
+```
+
+# Afegir descripció
+
+### 2.1.10. Representem les variables
 
 # Afegir gràfiques d'altres dades també separant pels grups de variables categòriques i analitzar els resultats
 
@@ -488,41 +521,6 @@ Comprovem valors nuls de la variable *renewable_generation_perc*:
 # Comprovem valors nuls per columnes
 sapply(esios_dataset, function(x) sum(is.na(x)))
 ```
-
-### 2.1.12. Representem l'histograma de les variables *renewable_generation_mw*, *renewable_generation_perc* i *renewable_generation_perc_bin*
-
-Representem l'histograma de la variable *renewable_generation_mw* en funció
-de la variable *energy_source*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Representar l'histograma per renewable_generation_mw en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_mw, fill = energy_source)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  labs(x = "Generació d'energia renovable (MW)", 
-        y = "Freqüència") + 
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir descripció
-
-Representem l'histograma de la variable *renewable_generation_perc* en funció
-de la variable *energy_source*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Representar l'histograma per renewable_generation_perc en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 10)) +
-  labs(x = "Percentatge de generació", 
-        y = "Freqüència") + 
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir descripció
 
 Representem l'histograma de la variable *renewable_generation_perc_bin* en funció
 de la variable *energy_source*:
@@ -886,7 +884,7 @@ aemet_dataset <- aemet_dataset %>%
   mutate(avg_daily_temp_bin = cut(avg_daily_temp, 
                                   breaks = c(-Inf, 0, 10, 20, 30, Inf), 
                                   labels = c("Below 0", "0-10", "10-20", 
-                                                          "20-30", "Above 30")),
+                                                          "20-30", "Above 30"),
                                   include.lowest = TRUE, right = FALSE)
 ```
 
@@ -906,7 +904,7 @@ ggplot(aemet_dataset, aes(x = avg_daily_temp_bin)) +
 
 # Afegir descripció
 
-### 2.2.10. Histogrames de la precipitació i la insolació
+### 2.2.10. Representació de la precipitació i la insolació
 
 A continuació, representem els histogrames per les variables 
 *daily_precipitation* i *insolation*:
@@ -964,7 +962,20 @@ ggplot(aemet_dataset, aes(x = insolation_bin)) +
 
 # Nota: falta afegir una descripció
 
-### 2.2.11. Histogrames de la velocitat del vent
+A continuació, representem els gràfics de dispersió per les variables
+*daily_precipitation* i *insolation*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Gràfic de dispersió de la precipitació i la insolació
+ggplot(aemet_dataset, aes(x = daily_precipitation, y = insolation)) + 
+  geom_point(alpha = 0.5) +
+  labs(x = "Precipitació (mm)", y = "Insolació (hores)") + 
+  theme_bw() +
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
+```
+
+### 2.2.11. Representació de la velocitat del vent
 
 A continuació, representem els histogrames per les variables *avg_wind_speed* i
 *max_wind_speed*:
@@ -986,86 +997,36 @@ ggplot(aemet_dataset, aes(x = avg_wind_speed)) +
 
 # Nota: falta afegir una descripció
 
-
-
-
-
-
-
-
-### 2.2.12. Eliminem les columnes innecessàries fent servir una matriu de correlació
-
-En primer lloc, eliminem les columnes *climate_indicator*, *station_name* i
-aqeulles que contenen les hores on s'han recollit els registres (*hour_min_temp*,
-*hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure*)
+A continuació, representem els gràfics de dispersió per les variables
+*avg_wind_speed* i *max_wind_speed*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les columnes climate_indicator i station_name using select
-aemet_dataset <- aemet_dataset %>% 
-  select(-climate_indicator, -station_name, -hour_min_temp, -hour_max_temp, 
-          -hour_max_wind_speed, -hour_max_pressure, -hour_min_pressure)
+# Gràfic de dispersió de la velocitat del vent
+ggplot(aemet_dataset, aes(x = avg_wind_speed, y = max_wind_speed)) + 
+  geom_point(alpha = 0.5) +
+  labs(x = "Velocitat del vent mitjana (km/h)", 
+        y = "Velocitat del vent màxima (km/h)") + 
+  theme_bw() +
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
 ```
 
-A continuació, es calcula la matriu de correlació entre les variables numèriques
-per veure aquelles que estan altament correlacionades i conservar-ne només una.
+# Nota: falta afegir una descripció
+
+Representem també els gràfics de dispersió per les variables
+*daily_precipitation* i *avg_wind_speed*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la matriu de correlació without NA values
-corr_matrix_aemet <- cor(aemet_dataset[, c("height_above_sea", 
-          "avg_daily_temp", "daily_precipitation", "min_daily_temp",
-          "max_daily_temp", "max_wind_direction", "avg_wind_speed", 
-          "max_wind_speed", "insolation", "max_pressure",
-          "min_pressure", "avg_pressure")], use = "complete.obs", 
-          method=c("pearson"))
-
-# Representem gràficament la matriu de correlació
-corrplot(corr_matrix_aemet, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 45, tl.cex = 1.5)
+# Gràfic de dispersió de la precipitació i la velocitat del vent
+ggplot(aemet_dataset, aes(x = daily_precipitation, y = avg_wind_speed)) + 
+  geom_point(alpha = 0.5) +
+  labs(x = "Precipitació (mm)", y = "Velocitat del vent mitjana (km/h)") + 
+  theme_bw() +
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
 ```
 
-Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp*
-estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem
-aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure* i
-*min_pressure*, aquestes estan altament correlacionades amb *avg_pressure*. Per
-això, conservarem la darrera variable i eliminarem la resta. Finalment, també
-eliminarem la direcció del vent, ja què hem considerat que no és útil per al
-nostre anàlisis.
-
-Així doncs, les columnes que es volen conservar són: *date*, *province*, 
-*avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, 
-*insolation*, *avg_pressure* i les variables discretitzades:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les columnes que no ens interessin
-aemet_dataset <- aemet_dataset %>% 
-  select(date, province, avg_daily_temp, daily_precipitation, avg_wind_speed, 
-          max_wind_speed, insolation, avg_pressure, avg_pressure_bin, 
-          avg_daily_temp_bin, insolation_bin)
-
-# Mostrem les primeres files del dataset
-head(aemet_dataset)
-```
-
-
-
-
-
-### 2.2.10. Transformació de les variables al format correcte
-
-Transformem la columna *date* a tipus data i la columna *province* al tipus factor.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Transformem la columna date al tipus de dades correcte
-aemet_dataset <- aemet_dataset %>% 
-  mutate(date = as.Date(date, format = "%Y-%m-%d"))
-
-# Transformem la columna province al tipus de dades factor
-aemet_dataset <- aemet_dataset %>% 
-  mutate(province = as.factor(province))
-
-# Verificació del tipus de dades
-sapply(aemet_dataset, class)
-```
+# Nota: falta afegir una descripció
 
 Finalment, presentem un resum del dataset AEMET processat:
 
@@ -1095,11 +1056,19 @@ dim(final_dataset)
 
 # Tipologia de columna
 sapply(final_dataset, class)
+
+# Check null values
+colSums(is.na(final_dataset))
+
+# Resum dataset
+summary(final_dataset)
 ```
 
 Es pot veure com el dataset final té gairebé 228.000 files i 16 columnes.
 D'aquestes, tenim una variable tipus *date*, 9 variables numèriques i 6
 variables categòriques.
+
+# Nota: revisant el dataset, veig que potser podríem fer un promig per províncies per evitar duplicats en les dades provinents del dataset ESIOS
 
 ## 2.4 Guardar dataset final en un fitxer csv
 
@@ -1115,29 +1084,17 @@ write.csv(final_dataset, file = "data/final_dataset.csv", row.names = FALSE)
 ## 3.1. Gestió dels zeros o elements buits
 
 Durant els apartats de preprocessat, ja s'ha pogut identificar que hi ha elements
-buits en el dataset. Per tant, procedirem a tractar-los. En primer lloc,
-presentem un resum dels elements buits per a cada columna del dataset:
+buits en el dataset. Degut a la necessitat de reduir la quantitat de dades com 
+també assegurar que els datasets ESIOS i AEMET tenien la mateixa granularitat per
+poder-los unir, s'ha decidit tractar els valors nuls en els apartats 2.1.7 i 2.2.5.
+El tractament que s'ha fet ha estat l'imputació de valors a partir de l'interpolació
+lineal, ja què estem treballant amb dades temporals. Per tant, el dataset ja no
+conté valors buits:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Resum dels elements buits
 summary(is.na(final_dataset))
 ```
-
-Presentem també les dimensions
-
-
-
-
-
-## 3.5. Gestió de zeros o valors buits
-
-Comprovem si hi ha valors nuls.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem si hi ha valors nuls
-sum(is.na(esios_dataset))
-```
-
 
 ## 3.2. Identificació i gestió de valors extrems
 
