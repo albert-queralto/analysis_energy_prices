@@ -17,6 +17,40 @@ output:
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
+# pip install in R --> Pots mirar si et va bé a tu? https://stackoverflow.com/questions/38928326/is-there-something-like-requirements-txt-for-r
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+pkgLoad <- function( packages = "favourites" ) {
+
+    if( length( packages ) == 1L && packages == "favourites" ) {
+        packages <- c( "ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
+              "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
+              "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
+              "pROC", "zoo", "reshape2"
+        )
+    }
+
+    packagecheck <- match( packages, utils::installed.packages()[,1] )
+
+    packagestoinstall <- packages[ is.na( packagecheck ) ]
+
+    if( length( packagestoinstall ) > 0L ) {
+        utils::install.packages( packagestoinstall,
+                             repos = "http://cran.csiro.au"
+        )
+    } else {
+        print( "All requested packages already installed" )
+    }
+
+    for( package in packages ) {
+        suppressPackageStartupMessages(
+            library( package, character.only = TRUE, quietly = TRUE )
+        )
+    }
+
+}
+```
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi
 # exploratòria de les dades
@@ -25,7 +59,7 @@ packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse",
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
               "pROC", "zoo", "reshape2")
 
-# Comentar si no cal instal·lar les llibreries --> Per esborrar?
+# Comentar si no cal instal·lar les llibreries
 # install.packages(packages, repos="https://cran.rediris.es/")  --> Per esborrar?
 lapply(packages, require, character.only = TRUE)
 ```
@@ -80,8 +114,6 @@ ens permetrà assolir els objectius següents marcats per a aquesta pràctica:
 - Predir el preu de l'energia elèctrica a Espanya en funció de la producció
   d'energia renovable.
 
-#### Què més podem afegir? Mirar d'ampliar una mica. 
-#### A part de les anàlisis que ens demanen, jo miraria de fer algun model senzill per predir el preu de l'energia elèctrica a partir de la producció d'energia renovable si tenim espai podem afegir? Mirar d'ampliar una mica. 
 
 # 2. Integració i selecció
 
