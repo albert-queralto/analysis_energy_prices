@@ -302,6 +302,13 @@ esios_dataset <- esios_dataset %>% mutate(energy_source = as.factor(energy_sourc
 
 # Verifiquem el tipus de dades de cada columna del dataset
 sapply(esios_dataset, class)
+
+# Visualitzem la transformació de la columna date i la columna energy_source
+t=table(esios_dataset$date)
+barplot(t, main="Date",col="yellow")
+
+t=table(esios_dataset$energy_source)
+barplot(t, main="Energy Source",col="blue")
 ```
 
 ### 2.1.6. Eliminem les columnes que no ens interessin
