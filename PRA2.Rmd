@@ -1,5 +1,5 @@
 ---
-title: 'Pràctica 2: Com Realitzar la neteja i l'anàlisi de dades?'
+title: "Pràctica 2: Com Realitzar la neteja i l'anàlisi de dades?"
 author: "Esther Manzano i Albert Queraltó"
 date: '`r format(Sys.Date(),"%e de %B %Y")`'
 output:
@@ -17,47 +17,15 @@ output:
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
-library(ggplot2)
-library(plyr)
-library(dplyr)
-library(stats)
-library(lmtest)
-library(tidyverse)
-library(caret)
-library(scales)
-library(gridExtra)
-library(grid)
-library(corrplot)
-library(RColorBrewer)
-library(reshape2)
-library(ggpubr)
-library(Hmisc)
-library(PerformanceAnalytics)
-library(arulesCBA)
-library(arules)
-library(arulesViz)
-library(factoextra)
-library(randomForest)
-library(rpart)
-library(rpart.plot)
-library(cluster)
-library(factoextra)
-library(useful)
-library(GGally)
-library(flexclust)
-library(clValid)
-library(NbClust)
-library(ROCR)
-library(precrec)
-library(e1071)
-library(knitr)
-library(lubridate)
-library(stringr)
-library(psych)
-library(pROC)
-library(xfun)
-library(zoo)
+# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
+packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
+              "caret", "corrplot", "ggpubr", "Hmisc", "PerformanceAnalytics", 
+              "factoextra", "rpart", "rpart.plot", "factoextra", "useful", 
+              "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
+              "pROC", "zoo")
+
+install.packages(packages)
+lapply(packages, require, character.only = TRUE)
 ```
 
 ```{r setup, include=FALSE}
@@ -1098,6 +1066,17 @@ summary(is.na(final_dataset))
 
 ## 3.2. Identificació i gestió de valors extrems
 
+Generalment, es consideren com a outliers tots aquells valors que es troben molt
+lluny dels valors de la resta de la mostra. En una distribució normal, això
+equival a $\pm 3\sigma$ respecte el valor promig.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Identificació de valors extrems de les variables numèriques
+final_dataset %>%
+  select(-date) %>%
+  mutate_if(is.numeric, ~ ifelse(abs(.) > 3 * sd(.), NA, .)) %>%
+  summarise_all(funs(sum(is.na(.))))
+```
 
 # 4. Anàlisi de les dades
 
