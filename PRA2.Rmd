@@ -79,12 +79,7 @@ ens permetrà assolir els objectius següents marcats per a aquesta pràctica:
   de l'energia.
 - Predir el preu de l'energia elèctrica a Espanya en funció de la producció
   d'energia renovable.
-  
 
-#### Què més podem afegir? Mirar d'ampliar una mica. 
-#### A part de les anàlisis que ens demanen, jo miraria de fer algun model 
-     senzill per predir el preu de l'energia elèctrica a partir de la producció
-     d'energia renovable.
 
 
 # 2. Integració i selecció
@@ -124,8 +119,8 @@ head(esios_dataset)
 dim(esios_dataset)
 ```
 
-Com podem veure, el dataset conté 13 columnes i 105120 files. Tot seguit, 
-comprovem el tipus de dades de cada columna del dataset:
+Com podem veure, el dataset conté dades estructurades en 13 columnes i 105120 files. Tot seguit, 
+comprovem el tipus de dades i les principals característiques de cada columna del dataset.
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
@@ -133,19 +128,54 @@ sapply(esios_dataset, class)
 ```
 
 Es pot veure com totes les columnes són de tipus "character", malgrat que la 
-majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ 
+majoria d'elles haurien de ser de tipus numèric per a portar a terme l'anàlisi pràctic correctament. Caldrà doncs fer un preprocessat previ 
 per poder tractar-les com a numèriques. A més, també es preprocessaran les 
-columnes "date" i "hour" per a poder tractar-les com a dates, com també la 
+columnes "date" i "hour" per a poder tractar-les com a dates, així com també la 
 columna "energy_source".
 
-Finalment, presentem un resum del dataset:
+Presentem un resum del dataset:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Resum del dataset
+# Taula resum que representa les principals característiques de les diferents variables
 summary(esios_dataset)
 ```
 
-# Afegir explicació (com són les estadístiques de les dades, valors nuls)
+Seguidament busquem valors nuls en el nostre dataset:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Valors nuls
+is.null(esios_dataset)
+```
+
+Observem zero valors nuls en el dataset. Podem afirmar doncs que el dataset d'ESIOS que vàrem extreure en la primera pràctica és complert. 
+
+Finalment, explorem el dataset mitjançant algunes estadístiques inicials:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Preview del dataset
+str(esios_dataset)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Compute the variance
+var(esios_dataset$energy_source)
+# Compute the standard deviation =
+# square root of th variance
+sd(esios_dataset$energy_source)
+
+
+summary(esios_dataset$energy.free.market..MWh.)
+
+summary(esios_dataset, digits = 1)
+
+
+sapply(esios_dataset[, -5], mean)
+
+```
+
+
+# Volia afegir estadístiques però pel fet que són characters encara en aquesta fase crec que no fa massa servei que agreguem res. He fet algunes proves. Et sembla bé si afegim les estadístiques més endavant? Jo treuria aquesta última part.
+
 
 ### 2.1.2. Processat d'*energy_source*
 
