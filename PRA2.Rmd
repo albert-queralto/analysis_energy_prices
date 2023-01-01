@@ -760,6 +760,24 @@ aemet_dataset <- aemet_dataset %>%
 head(aemet_dataset)
 ```
 
+Representem gràficament la distribució de les dades per les numèriques:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Histograma de les variables numèriques
+num_vars_aemet <- c("avg_daily_temp", "daily_precipitation", "avg_wind_speed", 
+          "max_wind_speed", "insolation", "max_pressure", "min_pressure")
+
+aemet_dataset %>%
+  select(num_vars_aemet) %>% gather() %>% filter(key != "date") %>% 
+  ggplot(aes(value)) + geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
+  theme_bw() + theme(text = element_text(size = 20))
+```
+
+# Afegir explicació del que es veu. Com és l'histograma? distribució normal, 
+# biax, etc.
+
+
 ### 2.2.7. Creació de la variable *avg_pressure*
 
 A continuació, creem la variable *avg_pressure* a partir de les variables
@@ -772,29 +790,27 @@ aemet_dataset <- aemet_dataset %>%
   mutate(avg_pressure = (max_pressure + min_pressure) / 2)
 ```
 
-A continuació, mostrem la distribució de les dades per les variables *min_pressure*,
+Representem també la distribució de les dades per les variables *min_pressure*,
 *max_pressure* i *avg_pressure*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Histograma de la pressió
 ggplot(aemet_dataset, aes(x = min_pressure)) + 
-  geom_histogram(bins = 50, fill = "blue", color = "black", alpha = 0.5) +
-  geom_histogram(aes(x = max_pressure), bins = 50, fill = "red", 
-                                                color = "black", alpha = 0.5) +
-  geom_histogram(aes(x = avg_pressure), bins = 50, fill = "green",
-                                                color = "black", alpha = 0.5) +
+  geom_density(fill = "blue", color = "black", alpha = 0.5) +
+  geom_density(aes(x = max_pressure), fill = "red", color = "black", alpha = 0.5) +
+  geom_density(aes(x = avg_pressure), fill = "green", color = "black", alpha = 0.5) +
   scale_x_continuous(name = "Pressió (hPa)") +
-  scale_y_continuous(name = "Nombre d'observacions") +
+  scale_y_continuous(name = "Densitat") +
   scale_fill_manual(name = "Pressió", 
                     values = c("blue", "red", "green"), 
                     labels = c("Mínima", "Màxima", "Mitjana")) +
   labs(title = "Distribució de la pressió") +
   theme_bw() +
   theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
 ```
 
-Finalment, eliminem les variables *min_pressure* i *max_pressure*:
+Es pot veure que la distribució de les tres variables és molt semblant. Així 
+doncs, eliminem les variables *min_pressure* i *max_pressure*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les variables min_pressure i max_pressure
@@ -830,7 +846,7 @@ aemet_dataset <- aemet_dataset %>%
                             labels = c("Depression", "Normal", "Anticyclone")))
 ```
 
-Tot seguit es representa el gràfic de barres per a la variable *avg_pressure_bin*:
+Es representa el gràfic de barres per a la variable *avg_pressure_bin*:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Gràfic de barres de la pressió
@@ -844,57 +860,12 @@ ggplot(aemet_dataset, aes(x = avg_pressure_bin)) +
   theme(plot.width = 200, plot.height = 100)
 ```
 
-# Afegir descripció
+Es pot veure que la majoria de les observacions (35000 comptes) es corresponen 
+amb pressions atmosfèriques associades a la depressió. Tanmateix, això no estarà
+sempre associat amb precipitació o mal temps, ja què dependrà d'altres variables
+com *insolation* o *daily_precipitation*.
 
-### 2.2.9. Discretització de la temperatura mitjana
-
-A continuació, representem l'histograma per les variables *avg_daily_temp*,
-*min_daily_temp* i *max_daily_temp*.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de les temperatures
-ggplot(aemet_dataset, aes(x = avg_daily_temp)) + 
-  geom_histogram(bins = 50, fill = "blue", color = "black", alpha = 0.5) +
-  scale_x_continuous(limits = c(-20, 50), breaks = seq(-20, 50, 10)) +
-  labs(x = "Temperatura (ºC)", y = "Freqüència") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir explicació del que es veu. Com és l'histograma? distribució normal, 
-# biax, etc.
-
-### 2.2.10. Representació de la precipitació i la insolació
-
-A continuació, representem els histogrames per les variables 
-*daily_precipitation* i *insolation*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de la precipitació
-ggplot(aemet_dataset, aes(x = daily_precipitation)) + 
-  geom_histogram(bins = 50, fill = "blue", color = "black", alpha = 0.5) +
-  scale_x_continuous(limits = c(-10, 150), breaks = seq(-10, 150, 20)) +
-  scale_y_log10() +
-  labs(x = "Precipitació (mm)", y = "Freqüència") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Nota: falta afegir una descripció
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de la insolació
-ggplot(aemet_dataset, aes(x = insolation)) + 
-  geom_histogram(bins = 50, fill = "red", color = "black", alpha = 0.5) +
-  labs(x = "Insolació (hores)", y = "Freqüència") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Nota: falta afegir una descripció
+### 2.2.9. Discretització de la insolació
 
 La variable *insolation* es discretitzarà en 3 intervals de 5 hores cadascun:
 
@@ -918,76 +889,12 @@ ggplot(aemet_dataset, aes(x = insolation_bin)) +
   labs(title = "Distribució de la insolació") +
   theme_bw() +
   theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
 ```
 
-# Nota: falta afegir una descripció
-
-A continuació, representem els gràfics de dispersió per les variables
-*daily_precipitation* i *insolation*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de dispersió de la precipitació i la insolació
-ggplot(aemet_dataset, aes(x = daily_precipitation, y = insolation)) + 
-  geom_point(alpha = 0.5) +
-  labs(x = "Precipitació (mm)", y = "Insolació (hores)") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-### 2.2.11. Representació de la velocitat del vent
-
-A continuació, representem els histogrames per les variables *avg_wind_speed* i
-*max_wind_speed*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de la velocitat del vent
-ggplot(aemet_dataset, aes(x = avg_wind_speed)) + 
-  geom_histogram(bins = 50, fill = "blue", color = "black", alpha = 0.5) +
-  geom_histogram(aes(x = max_wind_speed), bins = 50, fill = "red", 
-                                                color = "black", alpha = 0.5) +
-  scale_fill_manual(name = "Velocitat del vent", 
-                    values = c("blue", "red"), 
-                    labels = c("Mitjana", "Màxima")) +
-  labs(x = "Velocitat del vent (km/h)", y = "Freqüència") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Nota: falta afegir una descripció
-
-A continuació, representem els gràfics de dispersió per les variables
-*avg_wind_speed* i *max_wind_speed*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de dispersió de la velocitat del vent
-ggplot(aemet_dataset, aes(x = avg_wind_speed, y = max_wind_speed)) + 
-  geom_point(alpha = 0.5) +
-  labs(x = "Velocitat del vent mitjana (km/h)", 
-        y = "Velocitat del vent màxima (km/h)") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Nota: falta afegir una descripció
-
-Representem també els gràfics de dispersió per les variables
-*daily_precipitation* i *avg_wind_speed*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de dispersió de la precipitació i la velocitat del vent
-ggplot(aemet_dataset, aes(x = daily_precipitation, y = avg_wind_speed)) + 
-  geom_point(alpha = 0.5) +
-  labs(x = "Precipitació (mm)", y = "Velocitat del vent mitjana (km/h)") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Nota: falta afegir una descripció
+Es pot veure com predominen els dies assolellats, ja que les hores d'insolació
+es troben en els intervals 5-10 hores o 10+ hores. Per tant, això indica que la
+pressió atmosfèrica, tot i ser un indicador d'inestabilitat meteorològica, no 
+sembla suficient per determinar la insolació o la precipitació.
 
 Finalment, presentem un resum del dataset AEMET processat:
 
@@ -1028,9 +935,6 @@ summary(final_dataset)
 Es pot veure com el dataset final té gairebé 228.000 files i 16 columnes.
 D'aquestes, tenim una variable tipus *date*, 9 variables numèriques i 6
 variables categòriques.
-
-# Nota: revisant el dataset, veig que potser podríem fer un promig per províncies
-# per evitar duplicats en les dades provinents del dataset ESIOS
 
 ## 2.4 Guardar dataset final en un fitxer csv
 
@@ -1161,6 +1065,23 @@ ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) 
 ```
 
 # Afegir descripció
+
+A continuació, representem els gràfics de dispersió per les variables
+*avg_wind_speed* i *max_wind_speed*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Gràfic de dispersió de la velocitat del vent
+ggplot(aemet_dataset, aes(x = avg_wind_speed, y = max_wind_speed)) + 
+  geom_point(alpha = 0.5) +
+  labs(x = "Velocitat del vent mitjana (km/h)", 
+        y = "Velocitat del vent màxima (km/h)") + 
+  theme_bw() +
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
+```
+
+# Nota: falta afegir una descripció
+
 
 
 
