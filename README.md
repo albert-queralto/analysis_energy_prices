@@ -23,8 +23,16 @@ Queraltó i López**.
 
 ## Source Code
 
-TBD
+* **PRA2.Rmd:** contains code and explanation for the main analysis done on energy prices.
+* **aemet_preprocessing.ipynb:** contains preprocessing data for AEMET dataset.
+* **data/aemet_data.zip:** contains all data downloaded for AEMET dataset.
+* **data/aemet_dictionary.txt:** contains dictionary especifically for AEMET dataset.
+* **data/esios_dataset.csv:** contains ESIOS dataset preprocessed in the first assignment delivery for the same subject.
 
 ## Dataset
 
-TBD
+The data extracted from the website is stored in the folder **data**. The
+data for AEMET dataset is stored in different format files, being those *.zip*, *.txt* and *.ipynb*. The data for ESIOS dataset is stored in *.csv* format as it was submitted for the first assignment delivery on this same subject. Both datasets contain several variables compressed in the dates from *01-11-2020* to *31-10-2022*.
+
+ESIOS dataset was published in Zenodo and it can be accessed through the
+following link: *https://doi.org/10.5281/zenodo.7335618*
