@@ -1013,76 +1013,124 @@ factors externs com la meteorologia, la demanda, l'especulació dels mercats, et
 Per tant, la presència d'outliers no està ocasionada per registres incorrectes
 sinó per la naturalesa de les dades i no els eliminarem de les nostres anàlisis.
 
-
-# ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# # Histograma de la variable daily_precipitation
-# ggplot(normalized_data, aes(x = value)) +
-#   geom_histogram(bins = 100) +
-#   facet_wrap(~Var2) +
-#   theme_bw() +
-#   theme(text = element_text(size = 30))
-# ```
-
-
 # 4. Anàlisi de les dades
 
 ## 4.1. Selecció dels grups de dades a analitzar i tipus d'anàlisis que es portaran a terme
 
+### 4.1.1. Anàlisi producció energia renovable en el preu de l'electricitat
+
+Analitzarem la relació que té globalment la producció d'energia 
+renovable (*renewable_generation_perc*) en el preu de l'electricitat 
+(*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant
+per  *energy_source=total*.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Subset de les dades per energy_source = total
+subset_energy_source_total <- final_dataset %>% filter(energy_source == "total")
+```
+
+### 4.1.2. ???
+
+També analitzarem la contribució de la meteorologia en la producció d'energia
+renovable. 
+
+
+
+En segon lloc, volem conèixer quina és la relació entre *avg_daily_temp*.
+*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
+*avg_pressure* i *energy_source* respecte *renewable_generation_perc*.
+  
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Tipus de variables
+sapply(final_dataset, function(x) class(x))
+```
+
+### 4.1.3. ???
+
+
+### 4.1.4. ???
+
+
 ## 4.2. Comprovació de la normalitat i homogeneïtat de la variància
+
+### 4.2.1. Anàlisi producció energia renovable en el preu de l'electricitat
+
+Representar QQ-plots in a grid
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Creem un grid amb els QQ-plots
+# grid.arrange(
+#   qplot(sample = subset_energy_source_total$renewable_generation_perc, 
+#         xlab = "renewable_generation_perc") +
+#         labs(title=" QQ-plot of renewable_generation_perc") +
+#         theme_bw() +
+#         theme(text = element_text(size = 20)),
+#   qplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
+#         xlab = "avg_total_price_eur_mwh") +
+#         labs(title=" QQ-plot of avg_total_price_eur_mwh") +
+#         theme_bw() +
+#         theme(text = element_text(size = 20)), ncol = 2)
+```
+
+Representar QQ-plots in a grid using qqnorm and qqline
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Creem un grid amb els QQ-plots
+grid.arrange(
+  qqnorm(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
+    qqline(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
+    labs(title=" QQ-plot of renewable_generation_perc") +
+    theme_bw() +
+    theme(text = element_text(size = 20)),
+  qqnorm(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
+    qqline(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
+    labs(title=" QQ-plot of avg_total_price_eur_mwh") +
+    theme_bw() +
+    theme(text = element_text(size = 20)), ncol = 2)
+```
+
+
+Per comprovar la normalitat de les dades, utilitzarem el test de Shapiro-Wilk.
+Aquest test ens permet comprovar si les dades provenen d'una distribució normal
+o no. Per tant, si el p-value és menor que 0.05, les dades no provenen d'una
+distribució normal.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Comprovem la normalitat de les dades
+shapiro.test(subset_energy_source_total$renewable_generation_perc)
+shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
+```
 
 ## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
 
-
-Representem els histogrames de les variables *renewable_generation_mw* i
-*renewable_generation_perc* en funció de la variable *energy_source*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Representar l'histograma per renewable_generation_mw en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_mw, fill = energy_source)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  labs(x = "Generació d'energia renovable (MW)", 
-        y = "Freqüència") + 
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir descripció
-
-Representem l'histograma de la variable  en funció
-de la variable *energy_source*:
+Matriu de correlació entre *avg_daily_temp*.
+*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
+*avg_pressure* i *renewable_generation_perc*
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Representar l'histograma per renewable_generation_perc en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 10)) +
-  labs(x = "Percentatge de generació", 
-        y = "Freqüència") + 
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
+# Calculem la matriu de correlació without NA values
+corr_matrix_data <- cor(final_dataset[, c("avg_daily_temp", "daily_precipitation",
+          "avg_wind_speed", "max_wind_speed", "insolation", "avg_pressure",
+          "renewable_generation_perc")], use = "complete.obs", 
+          method=c("pearson"))
+
+# Representem gràficament la matriu de correlació
+corrplot(corr_matrix_data, method = "circle", type = "lower", 
+          tl.col = "black", tl.srt = 45, tl.cex = 1.5)
 ```
 
-# Afegir descripció
-
-A continuació, representem els gràfics de dispersió per les variables
-*avg_wind_speed* i *max_wind_speed*:
+Calculem la regressió entre les variables *avg_daily_temp*.
+*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
+*avg_pressure*, *energy_source* i *renewable_generation_perc*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de dispersió de la velocitat del vent
-ggplot(aemet_dataset, aes(x = avg_wind_speed, y = max_wind_speed)) + 
-  geom_point(alpha = 0.5) +
-  labs(x = "Velocitat del vent mitjana (km/h)", 
-        y = "Velocitat del vent màxima (km/h)") + 
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
+# Calculem la regressió lineal entre les variables
+regression <- lm(renewable_generation_perc ~ avg_daily_temp + daily_precipitation + 
+                  avg_wind_speed + max_wind_speed + insolation + avg_pressure + 
+                  energy_source, data = final_dataset)
+
+summary(regression)
 ```
-
-# Nota: falta afegir una descripció
-
-
 
 
 # Referències
