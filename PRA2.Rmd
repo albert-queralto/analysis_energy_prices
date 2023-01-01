@@ -61,7 +61,7 @@ funciona
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
-              "pROC", "zoo", "reshape2")
+              "pROC", "zoo", "reshape2", "gridExtra")
 
 # Comentar si no cal instal·lar les llibreries
 # install.packages(packages, repos="https://cran.rediris.es/")  --> Per esborrar?
@@ -314,12 +314,14 @@ esios_dataset <- esios_dataset %>% mutate(energy_source = as.factor(energy_sourc
 # Verifiquem el tipus de dades de cada columna del dataset
 sapply(esios_dataset, class)
 
+# Jo treuria aquestes dues gràfiques, ja què la informació que aporten per si
+# mateixes no és suficient com per representar-les gràficament.
 # Visualitzem la transformació de la columna date i la columna energy_source
-t=table(esios_dataset$date)
-barplot(t, main="Date",col="yellow")
+# t=table(esios_dataset$date)
+# barplot(t, main="Date",col="yellow")
 
-t=table(esios_dataset$energy_source)
-barplot(t, main="Energy Source",col="blue")
+# t=table(esios_dataset$energy_source)
+# barplot(t, main="Energy Source",col="blue")
 ```
 
 ### 2.1.6. Eliminem les columnes que no ens interessin
@@ -329,12 +331,12 @@ matriu de correlació.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Calculem la matriu de correlació
-corr_matrix_esios <- cor(esios_dataset[, c("avg_total_price_eur_mwh", 
-          "avg_price_free_market_eur_mwh", "avg_price_ref_market_eur_mwh",
-          "energy_free_market_mwh", "energy_ref_market_mwh",
-          "energy_total_mwh", "free_market_share_perc", 
-          "ref_market_share_perc", "renewable_generation_mw", 
-          "renewable_generation_perc")], use='complete.obs', method=c("pearson"))
+corr_vars_esios <- c("avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh",
+                    "avg_price_ref_market_eur_mwh", "energy_free_market_mwh",
+                    "energy_ref_market_mwh", "energy_total_mwh", 
+                    "free_market_share_perc", "ref_market_share_perc",
+                    "renewable_generation_mw", "renewable_generation_perc")
+corr_matrix_esios <- cor(esios_dataset[, corr_vars_esios], use='complete.obs', method=c("pearson"))
 
 # Representem gràficament la matriu de correlació
 corrplot(corr_matrix_esios, method = "circle", type = "lower", 
@@ -428,68 +430,24 @@ head(esios_dataset)
 sapply(esios_dataset, class)
 ```
 
-Representem l'histograma de la variable *renewable_generation_mw* en funció
-de la variable *energy_source*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Representar l'histograma per renewable_generation_mw en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_mw, fill = energy_source)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  labs(x = "Generació d'energia renovable (MW)", 
-        y = "Freqüència") + 
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir descripció
-
-Representem l'histograma de la variable *renewable_generation_perc* en funció
-de la variable *energy_source*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Representar l'histograma per renewable_generation_perc en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 10)) +
-  labs(x = "Percentatge de generació", 
-        y = "Freqüència") + 
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-# Afegir descripció
-
 ### 2.1.10. Representem les variables
 
-# Afegir gràfiques d'altres dades també separant pels grups de variables 
-# categòriques i analitzar els resultats
+# He canviat el tipus de gràfic perquè ocupi menys espai. Només he representat
+les variables finals.
 
-Representem l'histograma de la variable *avg_total_price_eur_mwh*:
+A continuació, representem les variables numèriques del dataset resultant en 
+diferents histogrames:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de la variable avg_total_price_eur_mwh
-ggplot(esios_dataset, aes(x = avg_total_price_eur_mwh)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  labs(x = "avg_total_price_eur_mwh", y = "Frequència") +
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
+# Histograma de les variables numèriques
+num_vars_esios <- c("avg_total_price_eur_mwh", "energy_total_mwh", 
+                    "renewable_generation_mw", "renewable_generation_perc")
 
-# Afegir descripció
-
-Representem l'histograma de la variable *energy_total_mwh*:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de la variable energy_total_mwh
-ggplot(esios_dataset, aes(x = energy_total_mwh)) + 
-  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
-  labs(x = "energy_total_mwh", y = "Frequència") +
-  theme_bw() + 
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
+esios_dataset %>%
+  select(num_vars_esios) %>% gather() %>% filter(key != "date") %>% 
+  ggplot(aes(value)) + geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
+  theme_bw() + theme(text = element_text(size = 20))
 ```
 
 # Afegir descripció
@@ -508,7 +466,8 @@ ggplot(esios_dataset, aes(y = energy_source)) +
 
 # Afegir descripció
 
-Finalment, eliminem la columna *renewable_generation_mw*:
+Eliminem la columna *renewable_generation_mw*, perquè aporta informació
+redundant respecte *renewable_generation_perc*
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminar la columna renewable_generation_mw
@@ -524,9 +483,8 @@ Això ens permetrà reduir la quantitat de dades i simplificarà algunes de les
 anàlisis posteriors.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Mostrar resum de les variables renewable_generation_mw i 
-#renewable_generation_perc
-summary(esios_dataset[, c("renewable_generation_mw", "renewable_generation_perc")])
+# Mostrar resum de la variable renewable_generation_perc
+summary(esios_dataset[, "renewable_generation_perc"])
 ```
 
 Es consideraran intervals amb percentatges negatius perquè hi ha valors de 
@@ -575,7 +533,6 @@ ggplot(esios_dataset, aes(x = renewable_generation_perc_bin, fill = energy_sourc
         y = "Freqüència") + 
   theme_bw() + 
   theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
 ```
 
 # Afegir descripció
@@ -1145,7 +1102,7 @@ nombre molt elevat d'outliers, essent la darrera la variable amb més outliers.
 # Faltaria descriure una mica més els motius de perquè hi pot haver outliers si hi ha espai
 
 Tanmateix, aquestes són dades que provenen de fonts fiables. A més, les dades
-d'origen climatològic estan sotmeses a una gran aleatorietat deguda a la naturalesa
+d'origen meteorològic estan sotmeses a una gran aleatorietat deguda a la naturalesa
 caòtica d'aquest tipus de sistemes. D'altra banda, la fluctuació de les variables
 energètiques té també un alt component aleatori ja que estan influenciades per
 factors externs com la meteorologia, la demanda, l'especulació dels mercats, etc. 
@@ -1170,6 +1127,40 @@ sinó per la naturalesa de les dades i no els eliminarem de les nostres anàlisi
 ## 4.2. Comprovació de la normalitat i homogeneïtat de la variància
 
 ## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
+
+
+Representem els histogrames de les variables *renewable_generation_mw* i
+*renewable_generation_perc* en funció de la variable *energy_source*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Representar l'histograma per renewable_generation_mw en funció de energy_source
+ggplot(esios_dataset, aes(x = renewable_generation_mw, fill = energy_source)) + 
+  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  labs(x = "Generació d'energia renovable (MW)", 
+        y = "Freqüència") + 
+  theme_bw() + 
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
+```
+
+# Afegir descripció
+
+Representem l'histograma de la variable  en funció
+de la variable *energy_source*:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Representar l'histograma per renewable_generation_perc en funció de energy_source
+ggplot(esios_dataset, aes(x = renewable_generation_perc, fill = energy_source)) + 
+  geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 10)) +
+  labs(x = "Percentatge de generació", 
+        y = "Freqüència") + 
+  theme_bw() + 
+  theme(text = element_text(size = 30))
+  theme(plot.width = 200, plot.height = 100)
+```
+
+# Afegir descripció
 
 
 
