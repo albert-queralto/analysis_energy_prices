@@ -19,37 +19,41 @@ els diferents models, analitzar-los i generar gràfics.
 
 # pip install in R --> Pots mirar si et va bé a tu? https://stackoverflow.com/questions/38928326/is-there-something-like-requirements-txt-for-r
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-pkgLoad <- function( packages = "favourites" ) {
+No apareix el missatge All requested packages already installed, si tinc tots 
+els paquets instal·lats. He provat amb "shiny" que no el tinc instal·lat i no
+funciona
 
-    if( length( packages ) == 1L && packages == "favourites" ) {
-        packages <- c( "ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
-              "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
-              "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
-              "pROC", "zoo", "reshape2"
-        )
-    }
+# ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# pkgLoad <- function( packages = "favourites" ) {
 
-    packagecheck <- match( packages, utils::installed.packages()[,1] )
+#     if( length( packages ) == 1L && packages == "favourites" ) {
+#         packages <- c( "ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
+#               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
+#               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
+#               "pROC", "zoo", "reshape2", "shiny"
+#         )
+#     }
 
-    packagestoinstall <- packages[ is.na( packagecheck ) ]
+#     packagecheck <- match( packages, utils::installed.packages()[,1] )
 
-    if( length( packagestoinstall ) > 0L ) {
-        utils::install.packages( packagestoinstall,
-                             repos = "http://cran.csiro.au"
-        )
-    } else {
-        print( "All requested packages already installed" )
-    }
+#     packagestoinstall <- packages[ is.na( packagecheck ) ]
 
-    for( package in packages ) {
-        suppressPackageStartupMessages(
-            library( package, character.only = TRUE, quietly = TRUE )
-        )
-    }
+#     if( length( packagestoinstall ) > 0L ) {
+#         utils::install.packages( packagestoinstall,
+#                              repos = "https://cran.rediris.es/"
+#         )
+#     } else {
+#         print( "All requested packages already installed" )
+#     }
 
-}
-```
+#     for( package in packages ) {
+#         suppressPackageStartupMessages(
+#             library( package, character.only = TRUE, quietly = TRUE )
+#         )
+#     }
+
+# }
+# ```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi
@@ -85,7 +89,8 @@ de gasos d'efecte hivernacle a l'atmosfera i frenar el canvi climàtic. [5]
 Per aquest motiu i amb l'objectiu de promoure la producció i utilització de 
 l'energia renovable, es vol analitzar l'evolució del preu de l'energia elèctrica
 a Espanya i la producció general d'energies renovables en el període de temps 
-comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022 en la mateixa zona geogràfica. 
+comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022 en la mateixa zona 
+geogràfica. 
 
 Aquesta informació es va recopilar en la primera pràctica mitjançant la tècnica de 
 webscraping a partir de les dades obtingudes de la web https://www.esios.ree.es/es/ 
@@ -151,8 +156,9 @@ head(esios_dataset)
 dim(esios_dataset)
 ```
 
-Com podem veure, el dataset conté dades estructurades en 13 columnes i 105120 files. Tot seguit, 
-comprovem el tipus de dades i les principals característiques de cada columna del dataset.
+Com podem veure, el dataset conté dades estructurades en 13 columnes i 105120 files.
+Tot seguit, comprovem el tipus de dades i les principals característiques de cada 
+columna del dataset.
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
@@ -160,10 +166,10 @@ sapply(esios_dataset, class)
 ```
 
 Es pot veure com totes les columnes són de tipus "character", malgrat que la 
-majoria d'elles haurien de ser de tipus numèric per a portar a terme l'anàlisi pràctic correctament. Caldrà doncs fer un preprocessat previ 
-per poder tractar-les com a numèriques. A més, també es preprocessaran les 
-columnes "date" i "hour" per a poder tractar-les com a dates, així com també la 
-columna "energy_source".
+majoria d'elles haurien de ser de tipus numèric per a portar a terme l'anàlisi 
+pràctic correctament. Caldrà doncs fer un preprocessat previ per poder tractar-les 
+com a numèriques. A més, també es preprocessaran les columnes "date" i "hour" per 
+a poder tractar-les com a dates, així com també la columna "energy_source".
 
 Presentem un resum del dataset:
   
@@ -179,35 +185,8 @@ Seguidament busquem valors nuls en el nostre dataset:
 is.null(esios_dataset)
 ```
 
-Observem zero valors nuls en el dataset. Podem afirmar doncs que el dataset d'ESIOS que vàrem extreure en la primera pràctica és complert. 
-
-Finalment, explorem el dataset mitjançant algunes estadístiques inicials:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Preview del dataset
-str(esios_dataset)
-```
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Compute the variance
-var(esios_dataset$energy_source)
-# Compute the standard deviation =
-# square root of th variance
-sd(esios_dataset$energy_source)
-
-
-summary(esios_dataset$energy.free.market..MWh.)
-
-summary(esios_dataset, digits = 1)
-
-
-sapply(esios_dataset[, -5], mean)
-
-```
-
-
-# Volia afegir estadístiques però pel fet que són characters encara en aquesta fase crec que no fa massa servei que agreguem res. He fet algunes proves. Et sembla bé si afegim les estadístiques més endavant? Jo treuria aquesta última part.
-
+Observem zero valors nuls en el dataset. Podem afirmar doncs que el dataset 
+d'ESIOS que vàrem extreure en la primera pràctica és complert. 
 
 ### 2.1.2. Processat d'*energy_source*
 
