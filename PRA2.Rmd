@@ -327,11 +327,11 @@ lloc, comprovem si hi ha valors nuls:
 colSums(is.na(esios_dataset))
 ```
 
-Es pot veure que algunes columnes contenen valors nuls tot i què aquests representen
-un percentatge molt reduit si tenim en compte les dimensions del dataset (105120
-files). Existeixen diversos mètodes per tractar-los entre ells la imputació amb
-el valor promig. Tot i què aquest mètode podria ser vàlid en aquest cas, en
-treballar amb dades que presenten una forta dependència temporal, es pot utilitzar
+Es pot veure que algunes columnes contenen valors nuls tot i que aquests representen
+un percentatge molt reduït si tenim en compte les dimensions del dataset (105120
+files). Existeixen diversos mètodes per tractar-los, entre ells la imputació amb
+el valor promig. Tot i que aquest mètode podria ser vàlid en aquest cas, en
+treballar amb dades que presenten una forta dependència temporal es pot utilitzar
 la interpolació dels valors faltants:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -366,7 +366,7 @@ head(esios_dataset)
 
 La columna *renewable_generation_perc* conté el percentatge d'energia renovable
 respecte el total. Per això, tornarem a recalcular-ne els valors tenint en compte
-les categories de la columna *energy_source* i respecte les columnes 
+les categories de la columna *energy_source* respecte les columnes 
 *renewable_generation_mw* i *energy_total_mwh*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -385,9 +385,6 @@ sapply(esios_dataset, class)
 
 ### 2.1.10. Representem les variables
 
-# He canviat el tipus de gràfic perquè ocupi menys espai. Només he representat
-les variables finals.
-
 A continuació, representem les variables numèriques del dataset resultant en 
 diferents histogrames:
 
@@ -403,7 +400,21 @@ esios_dataset %>%
   theme_bw() + theme(text = element_text(size = 20))
 ```
 
-# Afegir descripció
+Observem que les variables "renewable_generation_mw" i "renewable_generation_perc"
+segueixen un mateix patró (una essent el percentatge de l'altra). La frequència
+es presenta més alta, al voltant de 800 mw, quan els valors disminueixen i 
+decreix quan els valors incrementem, essent gairebé nul·la en valors de 30000.
+
+D'altra banda, el "avg_total_price_eur_mwh" presenta una clara tendència a la 
+baixa quan els valors de preu incrementen i una freqüència a l'alça quan els
+valors de preu decreixen.
+
+Finalment, la variable "energy_total_mwh" presenta una freqüència més elevada 
+entre els valors de 25000 i 30000 mwh.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+esios_dataset
+```
 
 Representem el gràfic de barres per la variable *energy_source*:
 
@@ -417,7 +428,10 @@ ggplot(esios_dataset, aes(y = energy_source)) +
   theme(plot.width = 200, plot.height = 100)
 ```
 
-# Afegir descripció
+En la gràfica superior observem com la font d'energia més utilitzada a Espanya 
+és la hidroelèctrica, seguida per la nuclear i la solar en segona i tercera posició.
+En aquest cas, l'energia eòlica seria la menys utilitzada.
+
 
 Eliminem la columna *renewable_generation_mw*, perquè aporta informació
 redundant respecte *renewable_generation_perc*
