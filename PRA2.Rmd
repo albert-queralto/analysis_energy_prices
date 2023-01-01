@@ -3,13 +3,13 @@ title: "Pràctica 2: Com realitzar la neteja i l'anàlisi de dades?"
 author: "Esther Manzano i Albert Queraltó"
 date: '`r format(Sys.Date(),"%e de %B %Y")`'
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: default
     number_sections: yes
     toc: yes
     toc_depth: 2
-  pdf_document:
-    toc: yes
 ---
 
 # LLibreries test
@@ -958,17 +958,17 @@ Representar QQ-plots in a grid using qqnorm and qqline
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creem un grid amb els QQ-plots
-grid.arrange(
-  qqnorm(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
-    qqline(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
-    labs(title=" QQ-plot of renewable_generation_perc") +
-    theme_bw() +
-    theme(text = element_text(size = 20)),
-  qqnorm(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
-    qqline(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
-    labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-    theme_bw() +
-    theme(text = element_text(size = 20)), ncol = 2)
+# grid.arrange(
+#   qqnorm(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
+#     qqline(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
+#     labs(title=" QQ-plot of renewable_generation_perc") +
+#     theme_bw() +
+#     theme(text = element_text(size = 20)),
+#   qqnorm(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
+#     qqline(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
+#     labs(title=" QQ-plot of avg_total_price_eur_mwh") +
+#     theme_bw() +
+#     theme(text = element_text(size = 20)), ncol = 2)
 ```
 
 
@@ -979,8 +979,8 @@ distribució normal.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem la normalitat de les dades
-shapiro.test(subset_energy_source_total$renewable_generation_perc)
-shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
+# shapiro.test(subset_energy_source_total$renewable_generation_perc)
+# shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
 ```
 
 ## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
