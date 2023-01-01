@@ -17,48 +17,6 @@ output:
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
-# pip install in R --> Pots mirar si et va bé a tu? https://stackoverflow.com/questions/38928326/is-there-something-like-requirements-txt-for-r
-
-No apareix el missatge All requested packages already installed, si tinc tots 
-els paquets instal·lats. He provat amb "shiny" que no el tinc instal·lat i no
-funciona
-
-# ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# pkgLoad <- function( packages = "favourites" ) {
-
-#     if( length( packages ) == 1L && packages == "favourites" ) {
-#         packages <- c( "ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
-#               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
-#               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
-#               "pROC", "zoo", "reshape2", "shiny"
-#         )
-#     }
-
-#     packagecheck <- match( packages, utils::installed.packages()[,1] )
-
-#     packagestoinstall <- packages[ is.na( packagecheck ) ]
-
-#     if( length( packagestoinstall ) > 0L ) {
-#         utils::install.packages( packagestoinstall,
-#                              repos = "https://cran.rediris.es/"
-#         )
-#     } else {
-#         print( "All requested packages already installed" )
-#     }
-
-#     for( package in packages ) {
-#         suppressPackageStartupMessages(
-#             library( package, character.only = TRUE, quietly = TRUE )
-#         )
-#     }
-
-# }
-# ```
-
-Ho treure doncs si et sembla bé. Miraré a veure si ho puc fer d'una altra manera 
-però si no ho fem sense pip install, no passa res. Amb R no sé massa com funciona.
-
-
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi
 # exploratòria de les dades
@@ -317,15 +275,6 @@ esios_dataset <- esios_dataset %>% mutate(energy_source = as.factor(energy_sourc
 
 # Verifiquem el tipus de dades de cada columna del dataset
 sapply(esios_dataset, class)
-
-# Jo treuria aquestes dues gràfiques, ja què la informació que aporten per si
-# mateixes no és suficient com per representar-les gràficament.
-# Visualitzem la transformació de la columna date i la columna energy_source
-# t=table(esios_dataset$date)
-# barplot(t, main="Date",col="yellow")
-
-# t=table(esios_dataset$energy_source)
-# barplot(t, main="Energy Source",col="blue")
 ```
 
 ### 2.1.6. Eliminem les columnes que no ens interessin
