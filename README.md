@@ -1,11 +1,5 @@
 # Analysis of Energy Prices Data and Renewable Energy Production
 
-## Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Description
 
 This repository contains the code, data and documentation done in the framework
