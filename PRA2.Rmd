@@ -417,7 +417,8 @@ ggplot(esios_dataset, aes(x = renewable_generation_perc_bin, fill = energy_sourc
   theme(text = element_text(size = 30))
 ```
 
-# Afegir descripció
+S'observa un percentatge de generació de les
+
 
 Finalment, presentem un resum del dataset ESIOS processat:
 
