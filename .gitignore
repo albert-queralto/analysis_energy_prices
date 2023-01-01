@@ -161,6 +161,9 @@ data/
 *.pdf
 *.csv
 *.txt
+*.Rhistory
+*.Rproj
+*.tex
 
 .ipynb_checkpoints
 .DS_Store
