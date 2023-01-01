@@ -339,7 +339,7 @@ ggplot(esios_dataset, aes(y = energy_source)) +
   geom_bar(aes(fill = energy_source), color = "black", alpha = 0.5) + 
   labs(x = "Frequència", y = "energy_source") +
   theme_bw() + 
-  theme(text = element_text(size = 30))
+  theme(text = element_text(size = 20))
   theme(plot.width = 200, plot.height = 100)
 ```
 
@@ -368,8 +368,7 @@ anàlisis posteriors.
 # Mostrar resum de la variable renewable_generation_perc
 summary(esios_dataset[, "renewable_generation_perc"])
 ```
-
-Es consideraran intervals amb percentatges negatius perquè hi ha valors de 
+Es consideraràn intervals amb percentatges negatius perquè hi ha valors de 
 generació d'energia renovable negatius probablement deguts al consum energètic 
 de la seva operació en dies en què no hi havia producció renovable. També es pot
 observar com hi ha algun valor amb percentatges de generació renovable superior.
@@ -414,10 +413,13 @@ ggplot(esios_dataset, aes(x = renewable_generation_perc_bin, fill = energy_sourc
   labs(x = "Percentatge de generació", 
         y = "Freqüència") + 
   theme_bw() + 
-  theme(text = element_text(size = 30))
+  theme(text = element_text(size = 20))
 ```
 
-# Afegir descripció
+S'observa un percentatge de generació entre el 0% i el 35% per totes les fonts 
+d'energia. Pel que fa a l'energia eòlica, aquesta presenta un percentatge superior
+en el rang del 36% al 75%.
+
 
 Finalment, presentem un resum del dataset ESIOS processat:
 
@@ -426,7 +428,6 @@ Finalment, presentem un resum del dataset ESIOS processat:
 summary(esios_dataset)
 ```
 
-# Afegir explicació
 
 ## 2.2. Càrrega, preprocessat i selecció del dataset AEMET
 
@@ -874,7 +875,7 @@ colnames(normalized_data) <- c("Variables", "Values")
 ggplot(normalized_data, aes(y = Variables, x = Values)) +
   geom_boxplot() +
   theme_bw() +
-  theme(text = element_text(size = 30))
+  theme(text = element_text(size = 20))
 ```
 
 A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les
@@ -1012,6 +1013,16 @@ regression <- lm(renewable_generation_perc ~ avg_daily_temp + daily_precipitatio
                   energy_source, data = final_dataset)
 
 summary(regression)
+```
+
+
+# Contribucions
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df <- data.frame(Contribucions=rep(c('Investigació prèvia', 'Redacció de les respostes', 'Desenvolupament del codi', 'Participació al vídeo'), each=1),
+                 Signatura=rep(c('Albert Queraltó, Esther Manzano', 'Albert Queraltó,     Esther Manzano', 'Albert Queraltó, Esther Manzano', 'Albert Queraltó, Esther Manzano'), times=1))
+
+df
 ```
 
 
