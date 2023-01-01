@@ -55,6 +55,10 @@ funciona
 # }
 # ```
 
+Ho treure doncs si et sembla bé. Miraré a veure si ho puc fer d'una altra manera 
+però si no ho fem sense pip install, no passa res. Amb R no sé massa com funciona.
+
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi
 # exploratòria de les dades
