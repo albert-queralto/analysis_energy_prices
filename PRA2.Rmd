@@ -18,11 +18,12 @@ Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
+# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi 
+# exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
-              "pROC", "zoo", "reshape2", "gridExtra")
+              "pROC", "zoo", "reshape2", "gridExtra", "knitr")
 
 # Comentar si no cal instal·lar les llibreries 
 # install.packages(packages, repos="https://cran.rediris.es/")
@@ -141,7 +142,8 @@ esios_dataset <- esios_dataset %>%
 
 ### 2.1.4 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
 
-Eliminem els separadors de milers de les columnes numèriques i substituïm els separadors decimals per un punt.
+Eliminem els separadors de milers de les columnes numèriques i substituïm els 
+separadors decimals per un punt.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem els separadors de milers de les columnes numèriques
@@ -169,7 +171,9 @@ esios_dataset <- esios_dataset %>%
   renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
 ```
 
-Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna del dataset.
+Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de 
+tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna 
+del dataset.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
@@ -413,7 +417,7 @@ ggplot(esios_dataset, aes(x = renewable_generation_perc_bin, fill = energy_sourc
   labs(x = "Percentatge de generació", 
         y = "Freqüència") + 
   theme_bw() + 
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 15))
 ```
 
 S'observa un percentatge de generació entre el 0% i el 35% per totes les fonts 
@@ -498,7 +502,11 @@ Finalment, presentem un resum del dataset:
 summary(aemet_dataset)
 ```
 
-# Afegir descripció
+Comprovem com totes les variables de les que disposa el dataset són de classe
+character excepte les variables *height_above_sea* i *max_wind_direction* que són
+de classe numèrica. Les variables de tipus numèric mostren diverses mètriques de
+les dades, com ara la mínima, màxima, mediana o mitjana de la variable.
+
 
 ### 2.2.2. Processat dels separadors decimals i transformació a variables numèriques
 
@@ -572,7 +580,7 @@ corr_matrix_aemet <- cor(aemet_dataset[, c("height_above_sea",
 
 # Representem gràficament la matriu de correlació
 corrplot(corr_matrix_aemet, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 45, tl.cex = 1.5)
+          tl.col = "black", tl.srt = 20, tl.cex = 1)
 ```
 
 Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp*
@@ -654,8 +662,10 @@ aemet_dataset %>%
   select(num_vars_aemet) %>% gather() %>% filter(key != "date") %>% 
   ggplot(aes(value)) + geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
   facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
-  theme_bw() + theme(text = element_text(size = 20))
+  theme_bw() + theme(text = element_text(size =15))
 ```
+
+En les gràfiques superiors observem
 
 # Afegir explicació del que es veu. Com és l'histograma? distribució normal, 
 # biax, etc.
