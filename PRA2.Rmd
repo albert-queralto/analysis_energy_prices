@@ -12,21 +12,19 @@ output:
     toc_depth: 2
 ---
 
-# LLibreries test
+# LLibreries
 
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi 
-# exploratòria de les dades
+# Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
               "pROC", "zoo", "reshape2", "gridExtra", "ggpubr", "rstatix")
 
-# Comentar si no cal instal·lar les llibreries 
-install.packages(packages, repos="https://cran.rediris.es/")
+install.packages(packages, repos="https://cran.rediris.es/") # Comentar si no cal instal·lar les llibreries 
 lapply(packages, require, character.only = TRUE)
 ```
 
@@ -171,9 +169,7 @@ esios_dataset <- esios_dataset %>%
   renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
 ```
 
-Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de 
-tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna 
-del dataset.
+Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna del dataset.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
@@ -185,8 +181,7 @@ head(esios_dataset)
 
 ### 2.1.5. Transformar *date* i *energy_source* al format correcte
 
-Transformem la columna *date* al tipus data i la columna *energy_source* al 
-tipus factor.
+Transformem la columna *date* al tipus data i la columna *energy_source* al tipus factor.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem la columna date al format correcte
@@ -202,10 +197,9 @@ sapply(esios_dataset, class)
 
 ### 2.1.6. Eliminem les columnes que no ens interessin
 
-Eliminem les columnes que no ens interessin per aquesta anàlisi fent servir una
-matriu de correlació.
+Eliminem les columnes que no ens interessin per aquesta anàlisi fent servir una matriu de correlació.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
 # Calculem la matriu de correlació
 corr_vars_esios <- c("avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh",
                     "avg_price_ref_market_eur_mwh", "energy_free_market_mwh",
@@ -219,14 +213,8 @@ corrplot(corr_matrix_esios, method = "circle", type = "lower",
           tl.col = "black", tl.srt = 45, tl.cex = 0.75)
 ```
 
-El resultat mostra que les variables *avg_price_free_market_eur_mwh*, 
-*avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada 
-correlació, per això només conservarem la darrera. Pel que fa a les variables 
-*free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i 
-*energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no
-aporten informació rellevant per a l'estudi proposat. Així doncs, les columnes 
-que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, 
-*energy_source*, *renewable_generation_mw* i *renewable_generation_perc*.
+El resultat mostra que les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada correlació, per això només conservarem la darrera. Pel que fa a les variables *free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no
+aporten informació rellevant per a l'estudi proposat. Així doncs, les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*, *renewable_generation_mw* i *renewable_generation_perc*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les columnes que no ens interessin
@@ -240,21 +228,14 @@ head(esios_dataset)
 
 ### 2.1.7. Tractament de valors nuls
 
-A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix,
-el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans
-els valors nuls, per poder fer un càlcul correcte del valor promig. En primer
-lloc, comprovem si hi ha valors nuls:
+A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix, el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans els valors nuls, per poder fer un càlcul correcte del valor promig. En primer lloc, comprovem si hi ha valors nuls:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(esios_dataset))
 ```
 
-Es pot veure que algunes columnes contenen valors nuls tot i que aquests representen
-un percentatge molt reduït si tenim en compte les dimensions del dataset (105120
-files). Existeixen diversos mètodes per tractar-los, entre ells la imputació amb
-el valor promig. Tot i que aquest mètode podria ser vàlid en aquest cas, en
-treballar amb dades que presenten una forta dependència temporal es pot utilitzar
+Es pot veure que algunes columnes contenen valors nuls tot i que aquests representen un percentatge molt reduït si tenim en compte les dimensions del dataset (105120 files). Existeixen diversos mètodes per tractar-los, entre ells la imputació amb el valor promig. Tot i que aquest mètode podria ser vàlid en aquest cas, en treballar amb dades que presenten una forta dependència temporal es pot utilitzar
 la interpolació dels valors faltants:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -270,10 +251,7 @@ colSums(is.na(esios_dataset))
 
 ### 2.1.8. Calculem el promig de totes les columnes numèriques en funció de la data
 
-Calculem el promig de totes les columnes numèriques del dataset tenint en compte
-els valors de les columnes *date* i *energy_source*. El promig es calcula perquè
-el dataset AEMET que tractarem posteriorment té una granularitat menor, és a dir,
-les dades estan agrupades per dia i no per dia i hora.
+Calculem el promig de totes les columnes numèriques del dataset tenint en compte els valors de les columnes *date* i *energy_source*. El promig es calcula perquè el dataset AEMET que tractarem posteriorment té una granularitat menor, és a dir, les dades estan agrupades per dia i no per dia i hora.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Calculem el promig de totes les columnes numèriques del dataset
@@ -287,10 +265,7 @@ head(esios_dataset)
 
 ### 2.1.9. Calcular percentatge d'energia renovable respecte el total
 
-La columna *renewable_generation_perc* conté el percentatge d'energia renovable
-respecte el total. Per això, tornarem a recalcular-ne els valors tenint en compte
-les categories de la columna *energy_source* respecte les columnes 
-*renewable_generation_mw* i *energy_total_mwh*.
+La columna *renewable_generation_perc* conté el percentatge d'energia renovable respecte el total. Per això, tornarem a recalcular-ne els valors tenint en compte les categories de la columna *energy_source* respecte les columnes *renewable_generation_mw* i *energy_total_mwh*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Calculem el percentatge d'energia renovable respecte el total
@@ -308,52 +283,36 @@ sapply(esios_dataset, class)
 
 ### 2.1.10. Representem les variables
 
-A continuació, representem les variables numèriques del dataset resultant en 
-diferents histogrames:
+A continuació, representem les variables numèriques del dataset resultant en diferents histogrames:
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=4, fig.width=8}
 # Histograma de les variables numèriques
 num_vars_esios <- c("avg_total_price_eur_mwh", "energy_total_mwh", 
                     "renewable_generation_mw", "renewable_generation_perc")
 
 esios_dataset %>%
   select(num_vars_esios) %>% gather() %>% filter(key != "date") %>% 
-  ggplot(aes(value)) + geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  ggplot(aes(value)) + geom_histogram(bins = 50, fill = c("#33CCFF"), alpha = 0.5) + 
   facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
-  theme_bw() + theme(text = element_text(size = 20))
+  theme_bw() + theme(text = element_text(size = 12))
 ```
 
-Observem que les variables *renewable_generation_mw* i *renewable_generation_perc*
-segueixen un mateix patró (una essent el percentatge de l'altra). La frequència
-es presenta més alta, al voltant de 800 MW, quan els valors disminueixen i 
-decreix quan els valors incrementem, essent gairebé nul·la en valors de 30000.
-
-D'altra banda, el *avg_total_price_eur_mwh* presenta una clara tendència a la 
-baixa quan els valors de preu incrementen i una freqüència a l'alça quan els
-valors de preu decreixen.
-
-Finalment, la variable *energy_total_mwh* presenta una freqüència més elevada 
-entre els valors de 25000 i 30000 MWh.
+Observem que les variables *renewable_generation_mw* i *renewable_generation_perc* segueixen un mateix patró (una essent el percentatge de l'altra). La frequència es presenta més alta, al voltant de 800 MW, quan els valors disminueixen i decreix quan els valors incrementem, essent gairebé nul·la en valors de 30000. D'altra banda, el *avg_total_price_eur_mwh* presenta una clara tendència a la baixa quan els valors de preu incrementen i una freqüència a l'alça quan els valors de preu decreixen. La variable *energy_total_mwh* presenta una freqüència més elevada entre els valors de 25000 i 30000 MWh. 
 
 Representem el gràfic de barres per la variable *energy_source*:
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=2, fig.width=5}
 # Gràfic de barres per la variable energy_source color by group
 ggplot(esios_dataset, aes(y = energy_source)) + 
   geom_bar(aes(fill = energy_source), color = "black", alpha = 0.5) + 
   labs(x = "Frequència", y = "energy_source") +
   theme_bw() + 
-  theme(text = element_text(size = 20))
-  theme(plot.width = 200, plot.height = 100)
+  theme(text = element_text(size = 12))
 ```
 
-En la gràfica superior observem com la font d'energia més utilitzada a Espanya 
-és la hidroelèctrica, seguida per la nuclear i la solar en segona i tercera posició.
-En aquest cas, l'energia eòlica seria la menys utilitzada.
+????? En la gràfica superior observem com la font d'energia més utilitzada a Espanya és la hidroelèctrica, seguida per la nuclear i la solar en segona i tercera posició. En aquest cas, l'energia eòlica seria la menys utilitzada. ?????
 
-
-Eliminem la columna *renewable_generation_mw*, perquè aporta informació
-redundant respecte *renewable_generation_perc*
+La distribució de comptes per les diferents fonts d'energia és uniforme. Eliminem la columna *renewable_generation_mw*, perquè aporta informació redundant respecte *renewable_generation_perc*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminar la columna renewable_generation_mw
@@ -363,21 +322,15 @@ esios_dataset <- esios_dataset %>%
 
 ### 2.1.11. Crear intervals per *renewable_generation_perc*
 
-La generació d'energia renovable té valors en tot el rang de percentatges, per tant,
-és una variable que es pot discretitzar en intervals fent servir el *binning*.
-Això ens permetrà reduir la quantitat de dades i simplificarà algunes de les 
+La generació d'energia renovable té valors en tot el rang de percentatges, per tant, és una variable que es pot discretitzar en intervals fent servir el *binning*. Això ens permetrà reduir la quantitat de dades i simplificarà algunes de les 
 anàlisis posteriors.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Mostrar resum de la variable renewable_generation_perc
 summary(esios_dataset[, "renewable_generation_perc"])
 ```
-Es consideraràn intervals amb percentatges negatius perquè hi ha valors de 
-generació d'energia renovable negatius probablement deguts al consum energètic 
-de la seva operació en dies en què no hi havia producció renovable. També es pot
-observar com hi ha algun valor amb percentatges de generació renovable superior.
-En concret és únicament un valor i, per tant, s'imputarà el valor 100 a la columna
-*renewable_generation_perc*.
+
+Es consideraràn intervals amb percentatges negatius perquè hi ha valors de generació d'energia renovable negatius probablement deguts al consum energètic de la seva operació en dies en què no hi havia producció renovable. També es pot observar com hi ha algun valor amb percentatges de generació renovable superior. En concret és únicament un valor i, per tant, s'imputarà el valor 100 a la columna *renewable_generation_perc*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Imputem el valor 100 a la columna renewable_generation_perc
@@ -407,24 +360,26 @@ Comprovem valors nuls de la variable *renewable_generation_perc*:
 sapply(esios_dataset, function(x) sum(is.na(x)))
 ```
 
-Representem l'histograma de la variable *renewable_generation_perc_bin* en funció
-de la variable *energy_source*:
+Representem l'histograma de la variable *renewable_generation_perc_bin* en funció de la variable *energy_source*:
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=5}
+# Filtrem l'energy_source diferent de "total"
+energy_source_data <- esios_dataset %>% filter(energy_source != "total")
+
 # Representar barplot per renewable_generation_perc_bin en funció de energy_source
-ggplot(esios_dataset, aes(x = renewable_generation_perc_bin, fill = energy_source)) + 
-  geom_bar() + 
+ggplot(energy_source_data, aes(x = renewable_generation_perc_bin, fill = energy_source)) + 
+  geom_bar(alpha=0.7) + 
+  scale_fill_brewer(palette="Spectral") +
   labs(x = "Percentatge de generació", 
         y = "Freqüència") + 
   theme_bw() + 
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 12))
 ```
 
-S'observa un percentatge de generació entre el 0% i el 35% per totes les fonts 
-d'energia. Pel que fa a l'energia eòlica, aquesta presenta un percentatge superior
-en el rang del 36% al 75%.
+S'observa que la majoria d'observacions tenen un percentatge de generació entre el 0% i el 35% amb una representació bastant semblant per les diferents fonts d'energia. Per tant, es pot concloure que la generació renovable es troba normalment per sota del 35%. Pel que fa a l'energia eòlica, s'observen també algunes observacions en el rang del 36% al 75%, essent la font d'energia que més contribueix a la producció renovable. D'altra banda, l'energia hidroelèctrica consumeix energia en alguns casos.
 
 
+# potser podem treure aquesta taula ja que tenim les gràfiques
 Finalment, presentem un resum del dataset ESIOS processat:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -437,18 +392,8 @@ summary(esios_dataset)
 
 ### 2.2.1. Càrrega de les dades i anàlisi a alt nivell
 
-Carreguem les dades del dataset AEMET en un dataframe. Aquestes dades s'han 
-obtingut de la web https://opendata.aemet.es/ utilitzant l'API proporcionada.
-La informació continguda al dataset va des de l'1 d'Octubre del 2020 al 30 de 
-Novembre del 2022. A més, el dataset està format per la data d'adquisició 
-dels registres, el número identificador de l'estació meteorològica, el seu nom,
-la provincia, l'altitud sobre el nivell del mar (en metres), la temperatura
-mitjana diària (ºC), la precipitació diària (en mm), la temperatura mínima (ºC),
-l'hora i minuts d'adquisició de la temperatura mínima, la temperatura màxima (ºC),
-l'hora i minuts d'adquisició de la temperatura màxima, la direcció de la ratxa
-de vent màxima, la velocitat mitjana del vent (m/s), l'hora de la ratxa màxima,
-l'insolació (en hores), la pressió màxima (hPa), l'hora de la pressió màxima, la
-pressió mínima (hPa), l'hora de la pressió mínima.
+Carreguem les dades del dataset AEMET en un dataframe. Aquestes dades s'han obtingut de la web https://opendata.aemet.es/ utilitzant l'API proporcionada. La informació continguda al dataset va des de l'1 d'Octubre del 2020 al 30 de Novembre del 2022. A més, el dataset està format per la data d'adquisició dels registres, el número identificador de l'estació meteorològica, el seu nom,
+la provincia, l'altitud sobre el nivell del mar (en metres), la temperatura mitjana diària (ºC), la precipitació diària (en mm), la temperatura mínima (ºC), l'hora i minuts d'adquisició de la temperatura mínima, la temperatura màxima (ºC), l'hora i minuts d'adquisició de la temperatura màxima, la direcció de la ratxa de vent màxima, la velocitat mitjana del vent (m/s), l'hora de la ratxa màxima, l'insolació (en hores), la pressió màxima (hPa), l'hora de la pressió màxima, la pressió mínima (hPa), l'hora de la pressió mínima.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem les dades del dataset AEMET
@@ -456,8 +401,7 @@ aemet_dataset <- read.csv("data/aemet_dataset.csv", sep = ";", header = TRUE,
                           stringsAsFactors = FALSE)
 ```
 
-Renombrem les columnes del dataset per fer-les més descriptives, facilitar-ne
-el tractament i la unió amb les dades del *dataset ESIOS*.
+Renombrem les columnes del dataset per fer-les més descriptives, facilitar-ne el tractament i la unió amb les dades del *dataset ESIOS*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Renombrem el nom de les columnes
@@ -482,31 +426,14 @@ Comprovem el nombre de files i columnes del dataset.
 dim(aemet_dataset)
 ```
 
-Com podem veure, el dataset conté 11 columnes i 190359 files. Tot seguit, 
-comprovem el tipus de dades de cada columna del dataset:
+Com podem veure, el dataset conté 11 columnes i 190359 files. Tot seguit, comprovem el tipus de dades de cada columna del dataset:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
 sapply(aemet_dataset, class)
 ```
 
-Es pot veure com totes les columnes són de tipus "character", malgrat que la 
-majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ 
-per poder tractar-les com a numèriques. A més, també es preprocessarà la 
-columna "date" per a poder tractar-la com a data.
-
-Finalment, presentem un resum del dataset:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Resum del dataset
-summary(aemet_dataset)
-```
-
-Comprovem com totes les variables de les que disposa el dataset són de classe
-character excepte les variables *height_above_sea* i *max_wind_direction* que són
-de classe numèrica. Les variables de tipus numèric mostren diverses mètriques de
-les dades, com ara la mínima, màxima, mediana o mitjana de la variable.
-
+Totes les columnes són de tipus "character", malgrat que la majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ per poder tractar-les com a numèriques. A més, també es preprocessarà la columna "date" per a poder tractar-la com a data.
 
 ### 2.2.2. Processat dels separadors decimals i transformació a variables numèriques
 
