@@ -14,8 +14,7 @@ output:
 
 # LLibreries
 
-Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
-els diferents models, analitzar-los i generar gràfics.
+Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
@@ -120,7 +119,7 @@ unique(esios_dataset$energy_source)
 
 ### 2.1.3. Processat de *renewable_generation_perc* i *renewable_generation_mw*
 
-Les columnes *renewable_generation_perc* i *renewable_generation_mw* contenen les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests strings per a poder tractar-les com a numèriques. També eliminarem el salt de línia ("\n") de la columna *renewable_generation_perc*.
+Les columnes *renewable_generation_perc* i *renewable_generation_mw* contenen les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests strings per a poder tractar-les com a numèriques. També eliminarem el salt de línia de la columna *renewable_generation_perc*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les unitats de les columnes "renewable_generation_perc" i "renewable_generation_mw"
@@ -213,8 +212,7 @@ corrplot(corr_matrix_esios, method = "circle", type = "lower",
           tl.col = "black", tl.srt = 45, tl.cex = 0.75)
 ```
 
-El resultat mostra que les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada correlació, per això només conservarem la darrera. Pel que fa a les variables *free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no
-aporten informació rellevant per a l'estudi proposat. Així doncs, les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*, *renewable_generation_mw* i *renewable_generation_perc*.
+El resultat mostra que les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada correlació, per això només conservarem la darrera. Pel que fa a les variables *free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no aporten informació rellevant per a l'estudi proposat. Així doncs, les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*, *renewable_generation_mw* i *renewable_generation_perc*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les columnes que no ens interessin
@@ -273,12 +271,7 @@ esios_dataset <- esios_dataset %>%
   mutate(renewable_generation_perc = renewable_generation_mw / energy_total_mwh * 100)
 
 # Mostrem les primeres files del dataset
-head(esios_dataset)
-```
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Verifiquem el tipus de dades de cada columna del dataset
-sapply(esios_dataset, class)
+summary(esios_dataset$renewable_generation_perc)
 ```
 
 ### 2.1.10. Representem les variables
@@ -348,9 +341,6 @@ esios_dataset <- esios_dataset %>%
                                         breaks = c(-Inf, 0, 35, 75, 100), 
                                         labels = c("Below 0", "0-35", "36-75", "76-100"),
                                         include.lowest = TRUE, right = TRUE))
-
-# Mostrem les primeres files del dataset
-head(esios_dataset)
 ```
 
 Comprovem valors nuls de la variable *renewable_generation_perc*:
@@ -415,30 +405,15 @@ colnames(aemet_dataset) <- c("date", "climate_indicator", "station_name",
                               "max_pressure", "hour_max_pressure",
                               "min_pressure", "hour_min_pressure")
 
-# Mostrem les primeres files del dataset
-head(aemet_dataset)
+# Taula resum que representa les principals característiques de les diferents variables
+str(aemet_dataset)
 ```
 
-Comprovem el nombre de files i columnes del dataset.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem el nombre de files i columnes del dataset
-dim(aemet_dataset)
-```
-
-Com podem veure, el dataset conté 11 columnes i 190359 files. Tot seguit, comprovem el tipus de dades de cada columna del dataset:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Verifiquem el tipus de dades de cada columna del dataset
-sapply(aemet_dataset, class)
-```
-
-Totes les columnes són de tipus "character", malgrat que la majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ per poder tractar-les com a numèriques. A més, també es preprocessarà la columna "date" per a poder tractar-la com a data.
+El dataset conté 11 columnes i 190359 files. Totes les columnes són de tipus *character*, malgrat que la majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ per poder tractar-les com a numèriques. A més, també es preprocessarà la columna *date* per a poder tractar-la com a data.
 
 ### 2.2.2. Processat dels separadors decimals i transformació a variables numèriques
 
-Com que els separadors decimals són diferents als que utilitza R,
-hem de processar-los per tal de poder-los transformar a columnes numèriques.
+Com que els separadors decimals són diferents als que utilitza R, hem de processar-los per tal de poder-los transformar a columnes numèriques.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Processat dels separadors decimals
@@ -462,9 +437,7 @@ head(aemet_dataset)
 
 ### 2.2.3. Transformar les columnes al format correcte
 
-A continuació, transformarem les columnes *date* a tipus *Date*, les variables
-*climate_indicator*, *station_name*, *province*, *hour_min_temp*, *hour_max_temp*,
-*hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure* a factor.
+A continuació, transformarem les columnes *date* a tipus *Date*, les variables *climate_indicator*, *station_name*, *province*, *hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*,  *hour_max_pressure* i *hour_min_pressure* a factor.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem la columna date a tipus Date
@@ -482,9 +455,7 @@ sapply(aemet_dataset, class)
 
 ### 2.2.4. Eliminem les columnes innecessàries
 
-En primer lloc, eliminem les columnes *climate_indicator*, *station_name* i
-aqeulles que contenen les hores on s'han recollit els registres (*hour_min_temp*,
-*hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure*)
+En primer lloc, eliminem les columnes *climate_indicator*, *station_name* i aqeulles que contenen les hores on s'han recollit els registres (*hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure*)
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les columnes climate_indicator i station_name using select
@@ -493,10 +464,9 @@ aemet_dataset <- aemet_dataset %>%
           -hour_max_wind_speed, -hour_max_pressure, -hour_min_pressure)
 ```
 
-A continuació, es calcula la matriu de correlació entre les variables numèriques
-per veure aquelles que estan altament correlacionades i conservar-ne només una.
+A continuació, es calcula la matriu de correlació entre les variables numèriques per veure aquelles que estan altament correlacionades i conservar-ne només una.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
 # Calculem la matriu de correlació without NA values
 corr_matrix_aemet <- cor(aemet_dataset[, c("height_above_sea", 
           "avg_daily_temp", "daily_precipitation", "min_daily_temp",
@@ -507,49 +477,30 @@ corr_matrix_aemet <- cor(aemet_dataset[, c("height_above_sea",
 
 # Representem gràficament la matriu de correlació
 corrplot(corr_matrix_aemet, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 20, tl.cex = 1)
+          tl.col = "black", tl.srt = 20, tl.cex = 0.8)
 ```
 
-Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp*
-estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem
-aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure* i
-*min_pressure*, aquestes també tenen una forta correlació. En aquest cas, només
-eliminarem la variable *height_above_sea*, ja què posteriorment es crearà una
-nova variable *avg_pressure* a partir de *max_pressure* i *min_pressure*. 
-Finalment, també eliminarem la direcció del vent, ja què hem considerat que no 
-és útil per al nostre anàlisis.
+Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp* estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure* i *min_pressure*, aquestes també tenen una forta correlació. En aquest cas, només eliminarem la variable *height_above_sea*, ja què posteriorment es crearà una nova variable *avg_pressure* a partir de *max_pressure* i *min_pressure*. Finalment, també eliminarem la direcció del vent, ja què hem considerat que no és útil per al nostre anàlisis.
 
-Així doncs, les columnes que es volen conservar són: *date*, *province*, 
-*avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, 
-*insolation*, *max_pressure* i *min_pressure*:
+Així doncs, les columnes que es volen conservar són: *date*, *province*, *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*, *max_pressure* i *min_pressure*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les columnes que no ens interessin
 aemet_dataset <- aemet_dataset %>% 
   select(date, province, avg_daily_temp, daily_precipitation, avg_wind_speed, 
           max_wind_speed, insolation, max_pressure, min_pressure)
-
-# Mostrem les primeres files del dataset
-head(aemet_dataset)
 ```
 
 ### 2.2.5. Tractament de valors nuls
 
-A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix,
-el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans
-els valors nuls, per poder fer un càlcul correcte del valor promig. En primer
-lloc, comprovem si hi ha valors nuls:
+A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix, el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans els valors nuls, per poder fer un càlcul correcte del valor promig. En primer lloc, comprovem si hi ha valors nuls:
   
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(aemet_dataset))
 ```
 
-Es pot veure que algunes columnes contenen valors nuls. Existeixen diversos 
-mètodes per tractar-los entre ells la imputació amb el valor promig. Tot i què 
-aquest mètode podria ser vàlid en aquest cas, en treballar amb dades temporals, 
-es pot utilitzar la interpolació dels valors faltants tal i com s'ha fet amb el
-dataset ESIOS:
+Es pot veure que algunes columnes contenen valors nuls. Existeixen diversos mètodes per tractar-los entre ells la imputació amb el valor promig. Tot i què aquest mètode podria ser vàlid en aquest cas, en treballar amb dades temporals, es pot utilitzar la interpolació dels valors faltants tal i com s'ha fet amb el dataset ESIOS:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Interpolació dels valors nuls
@@ -564,9 +515,7 @@ colSums(is.na(aemet_dataset))
 
 ### 2.2.6. Calcular promitjos de les variables numèriques
 
-Cada provincia pot tenir més d'una estació meteorològica. Així doncs, per tal de
-simplificar l'anàlisi de les dades, es procedirà a calcular el promig de les
-variables numèriques en base a les columnes *date* i *province*. 
+Cada provincia pot tenir més d'una estació meteorològica. Així doncs, per tal de simplificar l'anàlisi de les dades, es procedirà a calcular el promig de les variables numèriques en base a les columnes *date* i *province*. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Agrupem les dades per data i calculem els promitjos
@@ -587,9 +536,9 @@ num_vars_aemet <- c("avg_daily_temp", "daily_precipitation", "avg_wind_speed",
 
 aemet_dataset %>%
   select(num_vars_aemet) %>% gather() %>% filter(key != "date") %>% 
-  ggplot(aes(value)) + geom_histogram(bins = 50, color = "black", alpha = 0.5) + 
+  ggplot(aes(value)) + geom_histogram(bins = 50, fill = "#77aed3", alpha = 0.5) + 
   facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
-  theme_bw() + theme(text = element_text(size =15))
+  theme_bw() + theme(text = element_text(size =12))
 ```
 
 En les gràfiques superiors observem
@@ -600,9 +549,7 @@ En les gràfiques superiors observem
 
 ### 2.2.7. Creació de la variable *avg_pressure*
 
-A continuació, creem la variable *avg_pressure* a partir de les variables
-*max_pressure* i *min_pressure*, això ens permetrà simplicar el dataset i
-eliminar dades innecessàries.
+A continuació, creem la variable *avg_pressure* a partir de les variables *max_pressure* i *min_pressure*, això ens permetrà simplicar el dataset i eliminar dades innecessàries.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creació de la variable avg_pressure
@@ -896,17 +843,17 @@ Representar QQ-plots in a grid using qqnorm and qqline
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creem un grid amb els QQ-plots fent servir ggqqplot
-grid.arrange(
-  ggqqplot(sample = subset_energy_source_total$renewable_generation_perc, 
-           xlab = "renewable_generation_perc") +
-           labs(title=" QQ-plot of renewable_generation_perc") +
-           theme_bw() +
-           theme(text = element_text(size = 20)),
-  ggqqplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
-           xlab = "avg_total_price_eur_mwh") +
-           labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-           theme_bw() +
-           theme(text = element_text(size = 20)), ncol = 2)
+# grid.arrange(
+#   ggqqplot(sample = subset_energy_source_total$renewable_generation_perc, 
+#            xlab = "renewable_generation_perc") +
+#            labs(title=" QQ-plot of renewable_generation_perc") +
+#            theme_bw() +
+#            theme(text = element_text(size = 20)),
+#   ggqqplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
+#            xlab = "avg_total_price_eur_mwh") +
+#            labs(title=" QQ-plot of avg_total_price_eur_mwh") +
+#            theme_bw() +
+#            theme(text = element_text(size = 20)), ncol = 2)
 ```
 
 
