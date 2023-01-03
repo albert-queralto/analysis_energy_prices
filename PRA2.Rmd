@@ -23,10 +23,10 @@ els diferents models, analitzar-los i generar gràfics.
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
               "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
               "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
-              "pROC", "zoo", "reshape2", "gridExtra", "knitr")
+              "pROC", "zoo", "reshape2", "gridExtra", "ggpubr", "rstatix")
 
 # Comentar si no cal instal·lar les llibreries 
-# install.packages(packages, repos="https://cran.rediris.es/")
+install.packages(packages, repos="https://cran.rediris.es/")
 lapply(packages, require, character.only = TRUE)
 ```
 
@@ -952,34 +952,34 @@ Representar QQ-plots in a grid
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creem un grid amb els QQ-plots
-# grid.arrange(
-#   qplot(sample = subset_energy_source_total$renewable_generation_perc, 
-#         xlab = "renewable_generation_perc") +
-#         labs(title=" QQ-plot of renewable_generation_perc") +
-#         theme_bw() +
-#         theme(text = element_text(size = 20)),
-#   qplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
-#         xlab = "avg_total_price_eur_mwh") +
-#         labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-#         theme_bw() +
-#         theme(text = element_text(size = 20)), ncol = 2)
+grid.arrange(
+  qplot(sample = subset_energy_source_total$renewable_generation_perc, 
+        xlab = "renewable_generation_perc") +
+        labs(title=" QQ-plot of renewable_generation_perc") +
+        theme_bw() +
+        theme(text = element_text(size = 20)),
+  qplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
+        xlab = "avg_total_price_eur_mwh") +
+        labs(title=" QQ-plot of avg_total_price_eur_mwh") +
+        theme_bw() +
+        theme(text = element_text(size = 20)), ncol = 2)
 ```
 
 Representar QQ-plots in a grid using qqnorm and qqline
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Creem un grid amb els QQ-plots
-# grid.arrange(
-#   qqnorm(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
-#     qqline(as.numeric(subset_energy_source_total$renewable_generation_perc)) +
-#     labs(title=" QQ-plot of renewable_generation_perc") +
-#     theme_bw() +
-#     theme(text = element_text(size = 20)),
-#   qqnorm(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
-#     qqline(as.numeric(subset_energy_source_total$avg_total_price_eur_mwh)) +
-#     labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-#     theme_bw() +
-#     theme(text = element_text(size = 20)), ncol = 2)
+# Creem un grid amb els QQ-plots fent servir ggqqplot
+grid.arrange(
+  ggqqplot(sample = subset_energy_source_total$renewable_generation_perc, 
+           xlab = "renewable_generation_perc") +
+           labs(title=" QQ-plot of renewable_generation_perc") +
+           theme_bw() +
+           theme(text = element_text(size = 20)),
+  ggqqplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
+           xlab = "avg_total_price_eur_mwh") +
+           labs(title=" QQ-plot of avg_total_price_eur_mwh") +
+           theme_bw() +
+           theme(text = element_text(size = 20)), ncol = 2)
 ```
 
 
