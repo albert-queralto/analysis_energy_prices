@@ -24,7 +24,7 @@ Primer de tot, carregarem algunes llibreries que podríem necessitar per crear e
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "caret", "corrplot", 
               "Hmisc", "rpart", "rpart.plot", "useful", "ROCR", "precrec", "knitr", 
               "lubridate", "stringr", "psych", "pROC", "zoo", "reshape2", "gridExtra", 
-              "ggpubr", "rstatix", "lattice")
+              "ggpubr", "rstatix", "lattice", "ResourceSelection", "car")
 
 # install.packages(packages) # Comentar si no cal instal·lar les llibreries 
 lapply(packages, require, character.only = TRUE)
@@ -409,7 +409,7 @@ summary(is.na(final_dataset))
 Generalment, es consideren outliers tots aquells valors que es troben molt lluny dels valors de la resta de la mostra. En una distribució normal, això equival a $\pm 3\sigma$ respecte el valor promig. Per això, podem estandarditzar les columnes numèriques i representar els boxplots:
 
 \scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=8, fig.align='center'}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=2, fig.width=6, fig.align='center'}
 # Creem variable amb columnes numèriques
 num_vars <- c("avg_total_price_eur_mwh", "energy_total_mwh", "avg_daily_temp", 
               "renewable_generation_perc", "daily_precipitation",  
@@ -439,14 +439,11 @@ A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les 
 
 # 4. Anàlisi de les dades
 
-## 4.1. Selecció dels grups de dades a analitzar i tipus d'anàlisis que es portaran a terme
+## 4.1. Anàlisi producció energia renovable i la meteorologia en el preu de l'electricitat
 
-### 4.1.1. Anàlisi producció energia renovable en el preu de l'electricitat
+**Selecció dels grups de dades i tipus d'anàlisi**
 
-Analitzarem la relació que té globalment la producció d'energia 
-renovable (*renewable_generation_perc*) en el preu de l'electricitat 
-(*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant
-per  *energy_source=total*.
+Analitzarem la relació que té globalment la producció d'energia renovable (*renewable_generation_perc*) i la meteorologia en el preu de l'electricitat (*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant per *energy_source=total*.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -455,69 +452,23 @@ subset_energy_source_total <- final_dataset %>% filter(energy_source == "total")
 ```
 \normalsize
 
-### 4.1.2. ???
-
-També analitzarem la contribució de la meteorologia en la producció d'energia
-renovable. 
-
-
-
-En segon lloc, volem conèixer quina és la relació entre *avg_daily_temp*.
-*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
-*avg_pressure* i *energy_source* respecte *renewable_generation_perc*.
-
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Tipus de variables
-sapply(final_dataset, function(x) class(x))
-```
-\normalsize
-
-### 4.1.3. ???
-
-
-### 4.1.4. ???
-
-
-## 4.2. Comprovació de la normalitat i homogeneïtat de la variància
-
-### 4.2.1. Anàlisi producció energia renovable en el preu de l'electricitat
+L'anàlisi que aplicarem serà una regressió lineal multivariable.
 
 Representar QQ-plots in a grid
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=14, fig.align='center'}
-# Creem un grid amb els QQ-plots
-grid.arrange(
-  qplot(sample = subset_energy_source_total$renewable_generation_perc, 
-        xlab = "renewable_generation_perc") +
-        labs(title=" QQ-plot of renewable_generation_perc") +
-        theme_bw() +
-        theme(text = element_text(size = 20)),
-  qplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
-        xlab = "avg_total_price_eur_mwh") +
-        labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-        theme_bw() +
-        theme(text = element_text(size = 20)), ncol = 2)
+
 ```
 \normalsize
+
+**Comprovació de la normalitat i homogeneïtat de la variància**
 
 Representar QQ-plots in a grid using qqnorm and qqline
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Creem un grid amb els QQ-plots fent servir ggqqplot
-# grid.arrange(
-#   ggqqplot(sample = subset_energy_source_total$renewable_generation_perc, 
-#            xlab = "renewable_generation_perc") +
-#            labs(title=" QQ-plot of renewable_generation_perc") +
-#            theme_bw() +
-#            theme(text = element_text(size = 20)),
-#   ggqqplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
-#            xlab = "avg_total_price_eur_mwh") +
-#            labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-#            theme_bw() +
-#            theme(text = element_text(size = 20)), ncol = 2)
+
 ```
 \normalsize
 
@@ -533,6 +484,171 @@ distribució normal.
 # shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
 ```
 \normalsize
+
+**Proves estadístiques**
+
+
+
+
+
+## 4.2.  Anàlisi de *renewable_generation_perc_bin* en funció de la meteorologia i *energy_source*
+
+**Selecció dels grups de dades i tipus d'anàlisi**
+
+Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el percentatge de produccio d'energia renovable. Per això, crearem un subset de les dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable *renewable_generation_perc_bin* conté 3 grups (veure gràfic de barres a la secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a l'energia hidroelèctrica.
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Subset de les dades per energy_source != total
+subset_energy_source_type <- final_dataset %>% 
+  filter(energy_source != "total", renewable_generation_perc_bin != "Below 0")
+```
+\normalsize
+
+També estandarditzarem les variables per reduir la influència que poden tenir els diferents rangs de dades:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Filtrem el dataset
+energy_source_type_num <- subset_energy_source_type %>%
+  select(c("avg_daily_temp", "daily_precipitation", "avg_wind_speed", 
+           "max_wind_speed", "insolation", "avg_pressure"))
+# Estandaritzem les variables numèriques
+energy_source_type_num <- scale(energy_source_type_num)
+
+# Unim el dataset energy_source_type_num amb les columnes energy_source i renewable_generation_perc_bin
+energy_source_type_standard <- cbind(energy_source_type_num, 
+                       subset_energy_source_type[,c("energy_source", 
+                                   "renewable_generation_perc_bin")])
+
+summary(energy_source_type_standard)
+```
+\normalsize
+
+L'anàlisi que aplicarem serà una regressió logística multivariable on *renewable_generation_perc_bin* serà la variable objectiu i contindrà dos grups (*0-35* i *36-75*).
+
+**Comprovació de la normalitat i homogeneïtat de la variància**
+
+Comprovem la normalitat de les variables meteorològies *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure* fent servir gràfics Quantil-Quantil:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=4, fig.width=10, fig.align='center'}
+# Gràfic quantile-quantile
+qq_adt <- ggplot(energy_source_type_standard, aes(sample = avg_daily_temp)) + 
+  stat_qq() + stat_qq_line() + 
+  labs(x="Quantils teòrics", y="Quantils avg_daily_temp", 
+       title="avg_daily_temp") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_dp <- ggplot(energy_source_type_standard, aes(sample = daily_precipitation)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils daily_precipitation",
+    title="daily_precipitation") + theme_bw() + 
+  theme(text = element_text(size = 11))
+
+qq_aws <- ggplot(energy_source_type_standard, aes(sample = avg_wind_speed)) + 
+  stat_qq() + stat_qq_line() + 
+  labs(x="Quantils teòrics", y="Quantils avg_wind_speed", 
+    title="avg_wind_speed") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_mws <- ggplot(energy_source_type_standard, aes(sample = max_wind_speed)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils max_wind_speed", 
+       title="max_wind_speed") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_i <- ggplot(energy_source_type_standard, aes(sample = insolation)) + 
+  stat_qq() + stat_qq_line() + 
+  labs(x="Quantils teòrics", y="Quantils insolation", 
+       title="insolation") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_avg_p <- ggplot(energy_source_type_standard, aes(sample = avg_pressure)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils avg_pressure", 
+       title="avg_pressure") + theme_bw() + theme(text = element_text(size = 11))
+
+grid.arrange(qq_adt, qq_dp, qq_aws, qq_mws, qq_i, qq_avg_p, ncol=3, 
+             top="Quantile-Quantile plots")
+```
+\normalsize
+
+El *QQ-plot* permet observar com de propera és la distribució de les dades a la normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà la distribució. Per tant, podem dir què *avg_daily_temp* segueix una distribució pràcticament normal tot i què les cues tenen bastantes observacions (veure secció 2.2.3). La resta de variables no presenten distribucions normals; *insolation* té una distribució bastant uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables *daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation* (veure secció 2.2.3). Pel que fa a la variable *energy_source*, es pot veure que té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt.
+
+Comprovem l'homogeneitat de les variàncies:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Comprovem la homogeneïtat de les variàncies
+leveneTest(energy_source_type_standard$avg_daily_temp ~ energy_source_type_standard$renewable_generation_perc_bin)
+leveneTest(energy_source_type_standard$daily_precipitation ~ energy_source_type_standard$renewable_generation_perc_bin)
+leveneTest(energy_source_type_standard$avg_wind_speed ~ energy_source_type_standard$renewable_generation_perc_bin)
+leveneTest(energy_source_type_standard$max_wind_speed ~ energy_source_type_standard$renewable_generation_perc_bin)
+leveneTest(energy_source_type_standard$insolation ~ energy_source_type_standard$renewable_generation_perc_bin)
+leveneTest(energy_source_type_standard$avg_pressure ~ energy_source_type_standard$renewable_generation_perc_bin)
+```
+\normalsize
+
+El test de Levene rebutja la hipòtesi nul·la per les variables numèriques que volem analitzar respecte la variable *renewable_generation_perc_bin*, per tant, les distribucions no provenen de mostres amb variàncies uniformes. Tot i els resultats obtinguts que mostren que les distribucions no són normals i la no uniformitat de la variància, la regressió logística és menys sensible a les condicions de normalitat i homoscedasticitat, per tant, procedirem amb la seva implentació. [8]
+
+**Proves estadístiques**
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Calculem la regressió logística entre les variables
+logistic_renew_perc <- glm(formula = renewable_generation_perc_bin ~ avg_daily_temp + daily_precipitation + 
+                  avg_wind_speed + max_wind_speed + insolation + avg_pressure + 
+                  energy_source, data = energy_source_type_standard, family = binomial(link = logit))
+
+summary(logistic_renew_perc)
+```
+\normalsize
+
+El model obtingut mostra que les variables amb més pes són, en primer lloc, l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que aquestes variables tenen valors p propers a 1, fet que indicaria que la relació entre aquestes variables i *renewable_generation_perc_bin* no és significativa. Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*, l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients tenen valors p inferiors a 0.05, per tant, la relació és significativa. Finalment, les variables *daily_precipitation* i *avg_wind_speed* tenen poc pes, independentment del valor p associat. 
+
+# Què fer amb aquest test? La corva ROC surt molt millor!
+
+Si analitzem la bondat de l'ajust fent servir el *Hosmer-Lemeshow test*:
+
+\normalsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Test de Hosmer-Lemeshow
+hoslem.test(energy_source_type_standard$renewable_generation_perc_bin, fitted(logistic_renew_perc))
+```
+\scriptsize
+
+Veiem que el valor p del test és molt menor a 0.05 i, per tant, es pot rebutjar la hipòtesi nul·la. Això, implica que les prediccions del model no s’ajusten prou bé amb els valors observats. [8]
+
+Finalment, calculem la corba ROC i l'AUC:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Generem predictions per poder calcular la corva ROC
+prediccions_log <- predict(logistic_renew_perc, data = energy_source_type_standard, type = 'response')
+
+# Càlcul de la corba ROC i de la AUC
+r_log = roc(subset_energy_source_type$renewable_generation_perc_bin, prediccions_log, data = energy_source_type_standard, auc = TRUE, plot = TRUE)
+r_log
+```
+\normalsize
+
+Els resultats mostren com l'àrea sota la corva té un valor de 0.97, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
+
+
+### 4.3. Anàlisi de ....
+
+**Selecció dels grups de dades i tipus d'anàlisi**
+
+**Comprovació de la normalitat i homogeneïtat de la variància**
+
+**Proves estadístiques**
+
+
+### 4.4. Anàlisi de.....
+
+**Selecció dels grups de dades i tipus d'anàlisi**
+
+**Comprovació de la normalitat i homogeneïtat de la variància**
+
+**Proves estadístiques**
+
 
 ## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
 
@@ -560,14 +676,33 @@ Calculem la regressió entre les variables *avg_daily_temp*.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la regressió lineal entre les variables
-regression <- lm(renewable_generation_perc ~ avg_daily_temp + daily_precipitation + 
+# Calculem la regressió logística entre les variables
+regression <- glm(formula = renewable_generation_perc_bin ~ avg_daily_temp + daily_precipitation + 
                   avg_wind_speed + max_wind_speed + insolation + avg_pressure + 
-                  energy_source, data = final_dataset)
+                  energy_source, data = final_dataset, family = binomial(link = logit))
 
 summary(regression)
 ```
 \normalsize
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Contribucions
 
@@ -609,3 +744,5 @@ https://github.com/albert-queralto/scraping-energy-prices-spain
 [7] Esther Manzano i Albert Queraltó, "Evolution of the price of electricity and
 the renewable energy production in Spain" (Zenodo, 2022).
 https://doi.org/10.5281/zenodo.7335618
+
+[8] Montserrat Guillén Estany i María Teresa Alonso Alonso, "Models de regressió logística", UOC (2020). 
