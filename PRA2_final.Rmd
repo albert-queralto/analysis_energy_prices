@@ -11,6 +11,7 @@ output:
     number_sections: yes
     toc: yes
     toc_depth: 2
+fontsize: 11pt
 ---
 
 # LLibreries
@@ -19,10 +20,7 @@ Primer de tot, carregarem algunes llibreries que podríem necessitar per crear e
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
-packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
-              "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", 
-              "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", 
-              "pROC", "zoo", "reshape2", "gridExtra", "ggpubr", "rstatix")
+packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", "caret", "corrplot", "Hmisc", "rpart", "rpart.plot", "useful", "ROCR", "precrec", "knitr", "lubridate", "stringr", "psych", "pROC", "zoo", "reshape2", "gridExtra", "ggpubr", "rstatix", "lattice")
 
 # install.packages(packages) # Comentar si no cal instal·lar les llibreries 
 lapply(packages, require, character.only = TRUE)
@@ -53,233 +51,60 @@ en el mateix rang de dates que el dataset d'ESIOS. La combinació d'ambdós data
 
 # 2. Integració i selecció
 
-## 2.1. Càrrega, preprocessat i selecció del dataset ESIOS
+Degut a l'extensió del preprocessat, aquest s'ha dut a terme en un fitxer a part (*PRA2_preprocessing.Rmd*). En aquest document, només es mostra la integració i selecció de les dades.
+
+## 2.1. Càrrega i selecció del dataset ESIOS
 
 ### 2.1.1. Càrrega de les dades i anàlisi a alt nivell
 
-Carreguem les dades del dataset ESIOS que hem creat a la pràctica 1 en un dataframe. Aquestes dades són les obtingudes a partir de la web https://www.esios.ree.es/es/ [6-7] i contenen la informació de l'evolució del preu de l'energia elèctrica a Espanya i la producció d'energies renovables en el període de temps comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022.
+Carreguem les dades del *dataset ESIOS* creat a la pràctica 1 i preprocessat en un dataframe. Aquestes dades són les obtingudes a partir de la web https://www.esios.ree.es/es/ [6-7] i contenen la informació de l'evolució del preu de l'energia elèctrica a Espanya i la producció d'energies renovables en el període de temps comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022. Aquest dataset tenia una granularitat per hores. Tanmateix, el *dataset AEMET* contené dades per dia, per això, s'han calculat els promitjos diaris de les dades del *dataset ESIOS*. Per fer aquest càlcul, s'han hagut de tractar també els valors nuls, ja què si no, el promig diari no es podia calcular correctament. La imputació de valors nuls, tot i què aquests eren menys d'un 0.1% de les dades, s'ha fet interpolant les dades agrupades per la variable *energy_source*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem els datasets en un dataframe
-esios_dataset <- read.csv('data/esios_dataset.csv', header = TRUE, sep=";")
-```
+esios_dataset <- read.csv('data/esios_dataset_preprocessed.csv', header = TRUE, sep=",")
 
-Renombrem les columnes del dataset per a que siguin més fàcils de tractar.
+# Transformem les columnes date, energy_source i renewable_generation_perc_bin al format correcte
+esios_dataset$date <- as.Date(esios_dataset$date, format = "%Y-%m-%d")
+esios_dataset <- esios_dataset %>% 
+  mutate_at(vars(energy_source, renewable_generation_perc_bin), funs(as.factor(.)))
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Renombrem el nom de les columnes
-colnames(esios_dataset) <- c("date", "hour", "avg_total_price_eur_mwh", 
-                              "avg_price_free_market_eur_mwh", 
-                              "avg_price_ref_market_eur_mwh", "energy_total_mwh", 
-                              "energy_free_market_mwh", "energy_ref_market_mwh",
-                              "free_market_share_perc", "ref_market_share_perc", 
-                              "renewable_generation_perc", "energy_source", 
-                              "renewable_generation_mw")
-                              
 # Taula resum que representa les principals característiques de les diferents variables
 str(esios_dataset)
 ```
 
-El dataset conté dades estructurades en 13 columnes i 105120 files. També es pot veure com totes les columnes són de tipus *character*, malgrat que la majoria d'elles haurien de ser de tipus numèric per a portar a terme l'anàlisi pràctic correctament. Caldrà doncs fer un preprocessat previ per poder tractar-les com a numèriques. A més, també es preprocessaran les columnes *date* i *hour* per a poder tractar-les com a dates, així com també la columna *energy_source*.
+El dataset conté dades estructurades en 13 columnes i 4380 files. Les columnes *date*, *energy_source* i *renewable_generation_perc_bin* eren de tipus *character* i s'han transformat al tipus correcte (*Date* i *factor*).
 
-### 2.1.2. Processat d'*energy_source*
+### 2.1.2. Filtrat de variables numèriques
 
-Tractem els valors de la columna *energy_source* per a que tinguin un nom adequat. És a dir, els substituïm pels següents noms:
-- "renewable generation (MW)" per "total".
-- "wind generation (MW)" per "wind".
-- "water generation (MW)" per "hydroelectric".
-- "solar generation (MW)" per "solar".
-- "nuclear generation (MW)" per "nuclear".
-- "thermorenewable generation (MW)" per "thermorenewable".
+Filtrem les variables numèriques fent servir una matriu de correlació:
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-
-# Substituïm els valors de la columna "energy_source"
-esios_dataset$energy_source <- gsub("thermorenewable generation (MW)", 
-                                    "thermorenewable", 
-                                    esios_dataset$energy_source, fixed = TRUE)
-esios_dataset$energy_source <- gsub("renewable generation (MW)", 
-                                    "total", 
-                                    esios_dataset$energy_source, fixed = TRUE)
-esios_dataset$energy_source <- gsub("wind generation (MW)", 
-                                    "wind", 
-                                    esios_dataset$energy_source, fixed = TRUE)
-esios_dataset$energy_source <- gsub("water generation (MW)", 
-                                    "hydroelectric", 
-                                    esios_dataset$energy_source, fixed = TRUE)
-esios_dataset$energy_source <- gsub("solar generation (MW)", 
-                                    "solar", 
-                                    esios_dataset$energy_source, fixed = TRUE)
-esios_dataset$energy_source <- gsub("nuclear generation (MW)", 
-                                    "nuclear", 
-                                    esios_dataset$energy_source, fixed = TRUE)
-
-# Mostrem els valors únics per "energy_source"
-unique(esios_dataset$energy_source)
-```
-
-### 2.1.3. Processat de *renewable_generation_perc* i *renewable_generation_mw*
-
-Les columnes *renewable_generation_perc* i *renewable_generation_mw* contenen les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests strings per a poder tractar-les com a numèriques. També eliminarem el salt de línia de la columna *renewable_generation_perc*.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les unitats de les columnes "renewable_generation_perc" i "renewable_generation_mw"
-esios_dataset$renewable_generation_perc <- gsub("%", "", 
-                                        esios_dataset$renewable_generation_perc)
-esios_dataset$renewable_generation_mw <- gsub("MW", "", 
-                                        esios_dataset$renewable_generation_mw)
-
-# Eliminem els "\n" de la columna "renewable_generation_perc"
-esios_dataset$renewable_generation_perc <- gsub("\n", "", 
-                                        esios_dataset$renewable_generation_perc)
-
-# Eliminem els espais en blanc de totes les columnes
-esios_dataset <- esios_dataset %>% 
-  mutate_at(vars(date, hour, energy_source), funs(gsub(" ", "", .)))
-```
-
-### 2.1.4 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
-
-Eliminem els separadors de milers de les columnes numèriques i substituïm els 
-separadors decimals per un punt.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem els separadors de milers de les columnes numèriques
-esios_dataset <- esios_dataset %>% 
-  mutate_at(vars(energy_total_mwh, energy_ref_market_mwh, 
-  energy_free_market_mwh, renewable_generation_mw), funs(gsub(".", "", ., 
-                                                                fixed = TRUE)))
-
-# Eliminem els separadors de milers de les columnes numèriques
-esios_dataset <- esios_dataset %>% 
-  mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
-  avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
-  energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
-  renewable_generation_perc), funs(gsub(",", ".", ., fixed = TRUE)))
-```
-
-Finalment, transformem les columnes que haurien de ser numèriques a aquest tipus.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Transformem les columnes numèriques a tipus numèric
-esios_dataset <- esios_dataset %>% 
-  mutate_at(vars(avg_total_price_eur_mwh, avg_price_ref_market_eur_mwh, 
-  avg_price_free_market_eur_mwh, energy_total_mwh, energy_ref_market_mwh, 
-  energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
-  renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
-```
-
-Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna del dataset.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Verifiquem el tipus de dades de cada columna del dataset
-sapply(esios_dataset, class)
-
-# Mostrem les primeres files del dataset
-head(esios_dataset)
-```
-
-### 2.1.5. Transformar *date* i *energy_source* al format correcte
-
-Transformem la columna *date* al tipus data i la columna *energy_source* al tipus factor.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Transformem la columna date al format correcte
-esios_dataset <- esios_dataset %>% 
-  mutate(date = as.Date(date, format = "%Y-%m-%d"))
-
-# Transformem les columnes energy_source a factor
-esios_dataset <- esios_dataset %>% mutate(energy_source = as.factor(energy_source))
-
-# Verifiquem el tipus de dades de cada columna del dataset
-sapply(esios_dataset, class)
-```
-
-### 2.1.6. Eliminem les columnes que no ens interessin
-
-Eliminem les columnes que no ens interessin per aquesta anàlisi fent servir una matriu de correlació.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=6}
 # Calculem la matriu de correlació
-corr_vars_esios <- c("avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh",
-                    "avg_price_ref_market_eur_mwh", "energy_free_market_mwh",
-                    "energy_ref_market_mwh", "energy_total_mwh", 
-                    "free_market_share_perc", "ref_market_share_perc",
-                    "renewable_generation_mw", "renewable_generation_perc")
+corr_vars_esios <- c("avg_total_price_eur_mwh", "avg_price_free_market_eur_mwh", "avg_price_ref_market_eur_mwh", "energy_free_market_mwh",
+                    "energy_ref_market_mwh", "energy_total_mwh", "free_market_share_perc", "ref_market_share_perc", "renewable_generation_mw", "renewable_generation_perc")
 corr_matrix_esios <- cor(esios_dataset[, corr_vars_esios], use='complete.obs', method=c("pearson"))
 
 # Representem gràficament la matriu de correlació
 corrplot(corr_matrix_esios, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 45, tl.cex = 0.75)
+          tl.col = "black", tl.srt = 45, tl.cex = 0.5)
 ```
 
-El resultat mostra que les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada correlació, per això només conservarem la darrera. Pel que fa a les variables *free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no aporten informació rellevant per a l'estudi proposat. Així doncs, les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*, *renewable_generation_mw* i *renewable_generation_perc*.
+Les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada correlació, per això només conservarem la darrera. Pel que fa a les variables *free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no aporten informació rellevant per a l'estudi proposat. Així doncs, les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*, *renewable_generation_mw*, *renewable_generation_perc* i *renewable_generation_perc_bin*.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les columnes que no ens interessin
+# Filtrem les columnes que no ens interessin
 esios_dataset <- esios_dataset %>% 
-  select(date, avg_total_price_eur_mwh, energy_total_mwh, energy_source, 
-  renewable_generation_perc, renewable_generation_mw)
+  select(date, avg_total_price_eur_mwh, energy_total_mwh, energy_source, renewable_generation_perc, renewable_generation_mw, renewable_generation_perc_bin)
 
 # Mostrem les primeres files del dataset
 head(esios_dataset)
 ```
 
-### 2.1.7. Tractament de valors nuls
+### 2.1.10. Representem les variables resultants
 
-A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix, el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans els valors nuls, per poder fer un càlcul correcte del valor promig. En primer lloc, comprovem si hi ha valors nuls:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem si hi ha valors nuls a les dades per columnes
-colSums(is.na(esios_dataset))
-```
+Representem les variables numèriques del dataset resultant en diferents histogrames:
 
-Es pot veure que algunes columnes contenen valors nuls tot i que aquests representen un percentatge molt reduït si tenim en compte les dimensions del dataset (105120 files). Existeixen diversos mètodes per tractar-los, entre ells la imputació amb el valor promig. Tot i que aquest mètode podria ser vàlid en aquest cas, en treballar amb dades que presenten una forta dependència temporal es pot utilitzar
-la interpolació dels valors faltants:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Interpolació dels valors nuls
-esios_dataset <- esios_dataset %>% 
-  group_by(date, energy_source) %>% 
-  mutate_at(vars(avg_total_price_eur_mwh, energy_total_mwh,
-  renewable_generation_perc, renewable_generation_mw), funs(na.approx(.)))
-
-# Comprovem si hi ha valors nuls a les dades per columnes
-colSums(is.na(esios_dataset))
-```
-
-### 2.1.8. Calculem el promig de totes les columnes numèriques en funció de la data
-
-Calculem el promig de totes les columnes numèriques del dataset tenint en compte els valors de les columnes *date* i *energy_source*. El promig es calcula perquè el dataset AEMET que tractarem posteriorment té una granularitat menor, és a dir, les dades estan agrupades per dia i no per dia i hora.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem el promig de totes les columnes numèriques del dataset
-esios_dataset <- esios_dataset %>% 
-  group_by(date, energy_source) %>% 
-  summarise_all(funs(mean(., na.rm = FALSE)))
-
-# Mostrem les primeres files del dataset
-head(esios_dataset)
-```
-
-### 2.1.9. Calcular percentatge d'energia renovable respecte el total
-
-La columna *renewable_generation_perc* conté el percentatge d'energia renovable respecte el total. Per això, tornarem a recalcular-ne els valors tenint en compte les categories de la columna *energy_source* respecte les columnes *renewable_generation_mw* i *energy_total_mwh*.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem el percentatge d'energia renovable respecte el total
-esios_dataset <- esios_dataset %>% 
-  mutate(renewable_generation_perc = renewable_generation_mw / energy_total_mwh * 100)
-
-# Mostrem les primeres files del dataset
-summary(esios_dataset$renewable_generation_perc)
-```
-
-### 2.1.10. Representem les variables
-
-A continuació, representem les variables numèriques del dataset resultant en diferents histogrames:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=4, fig.width=8}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=2, fig.width=10}
 # Histograma de les variables numèriques
 num_vars_esios <- c("avg_total_price_eur_mwh", "energy_total_mwh", 
                     "renewable_generation_mw", "renewable_generation_perc")
@@ -287,11 +112,37 @@ num_vars_esios <- c("avg_total_price_eur_mwh", "energy_total_mwh",
 esios_dataset %>%
   select(num_vars_esios) %>% gather() %>% filter(key != "date") %>% 
   ggplot(aes(value)) + geom_histogram(bins = 50, fill = c("#33CCFF"), alpha = 0.5) + 
-  facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
-  theme_bw() + theme(text = element_text(size = 12))
+  facet_wrap(~key, scales = "free", ncol = 4) + labs(x = "Valors", y = "Frequència") +
+  theme_bw() + theme(text = element_text(size = 11))
 ```
 
-Observem que les variables *renewable_generation_mw* i *renewable_generation_perc* segueixen un mateix patró (una essent el percentatge de l'altra). La frequència es presenta més alta, al voltant de 800 MW, quan els valors disminueixen i decreix quan els valors incrementem, essent gairebé nul·la en valors de 30000. D'altra banda, el *avg_total_price_eur_mwh* presenta una clara tendència a la baixa quan els valors de preu incrementen i una freqüència a l'alça quan els valors de preu decreixen. La variable *energy_total_mwh* presenta una freqüència més elevada entre els valors de 25000 i 30000 MWh. 
+Observem que les variables *renewable_generation_mw* i *renewable_generation_perc* segueixen un mateix patró (una essent el percentatge de l'altra). S'observa una freqüència més alta al voltant de 800 MW, mentre què aquesta disminueix a mesura que augmenta la potència renovable, essent gairebé nul·la en valors de 30000 MW. Això indicaria que la producció renovable és normalment baixa, entre el 0 i el 25%. L'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW. Això indicaria la presència de períodes amb dos rangs de preus molt diferents. La variable *energy_total_mwh* presenta una distribució lleugerament esbiaxada cap a l'esquerra amb un màxim de freqüència entorn els 28000 MWh.
+
+Representem la sèrie temporal de les mateixes variables:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=12}
+# Serie temporal de les variables avg_total_price_eur_mwh, energy_total_mwh, renewable_generation_mw i renewable_generation_perc
+total_price_plot <- ggplot(esios_dataset, aes(x = date, y = avg_total_price_eur_mwh)) + geom_line() + labs(title = "avg_total_price_eur_mwh", 
+        x = "Date", y = "Avg total price eur mwh") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(text = element_text(size = 11))
+
+energy_total_plot <- ggplot(esios_dataset, aes(x = date, y = energy_total_mwh)) + geom_line() + labs(title = "energy_total_mwh",
+        x = "Date", y = "Energy total mwh") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(text = element_text(size = 11))
+  
+renewable_generation_plot <- ggplot(esios_dataset, aes(x = date, y = renewable_generation_mw, color = energy_source)) + geom_line() + labs(title = "renewable_generation_mw",
+        x = "Date", y = "Renewable generation mw") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(text = element_text(size = 11))
+
+renewable_generation_perc_plot <- ggplot(esios_dataset, aes(x = date, y = renewable_generation_perc, color = energy_source)) + geom_line() + labs(title = "renewable_generation_perc",
+        x = "Date", y = "Renewable generation perc") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme_bw() + theme(text = element_text(size = 11))
+
+grid.arrange(total_price_plot, energy_total_plot, renewable_generation_plot, renewable_generation_perc_plot, ncol = 2)
+```
+
+La presència de les dues distribucions per *avg_total_price_eur_mwh* es veu clarament ja que els preus eren més propers als 100 €/MWh per l'any 2021, mentre què aquests van pujar entorn els 200 €/MWh al 2022. L'evolució de *energy_total_mwh* mostra que la producció a Espanya es situa entre els 22000 i els 32000 MW, aproximadament.
+
 
 Representem el gràfic de barres per la variable *energy_source*:
 
