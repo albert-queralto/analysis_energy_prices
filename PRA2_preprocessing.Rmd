@@ -17,6 +17,7 @@ output:
 
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
@@ -27,10 +28,13 @@ packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse",
 # install.packages(packages) # Comentar si no cal instal·lar les llibreries 
 lapply(packages, require, character.only = TRUE)
 ```
+\normalsize
 
+\scriptsize
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+\normalsize
 
 # 1. Descripció del fitxer
 
@@ -44,13 +48,16 @@ Aquest document conté tota la part de preprocessat prèvia a la integració i s
 
 Carreguem les dades del dataset ESIOS que hem creat a la pràctica 1 en un dataframe. Aquestes dades són les obtingudes a partir de la web https://www.esios.ree.es/es/ [6-7] i contenen la informació de l'evolució del preu de l'energia elèctrica a Espanya i la producció d'energies renovables en el període de temps comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem els datasets en un dataframe
 esios_dataset <- read.csv('data/esios_dataset.csv', header = TRUE, sep=";")
 ```
+\normalsize
 
 Renombrem les columnes del dataset per a que siguin més fàcils de tractar.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Renombrem el nom de les columnes
 colnames(esios_dataset) <- c("date", "hour", "avg_total_price_eur_mwh", 
@@ -64,6 +71,7 @@ colnames(esios_dataset) <- c("date", "hour", "avg_total_price_eur_mwh",
 # Taula resum que representa les principals característiques de les diferents variables
 str(esios_dataset)
 ```
+\normalsize
 
 El dataset conté dades estructurades en 13 columnes i 105120 files. També es pot veure com totes les columnes són de tipus *character*, malgrat que la majoria d'elles haurien de ser de tipus numèric per a portar a terme l'anàlisi pràctic correctament. Caldrà doncs fer un preprocessat previ per poder tractar-les com a numèriques. A més, també es preprocessaran les columnes *date* i *hour* per a poder tractar-les com a dates, així com també la columna *energy_source*.
 
@@ -77,6 +85,7 @@ Tractem els valors de la columna *energy_source* per a que tinguin un nom adequa
 - "nuclear generation (MW)" per "nuclear".
 - "thermorenewable generation (MW)" per "thermorenewable".
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 
 # Substituïm els valors de la columna "energy_source"
@@ -102,11 +111,13 @@ esios_dataset$energy_source <- gsub("nuclear generation (MW)",
 # Mostrem els valors únics per "energy_source"
 unique(esios_dataset$energy_source)
 ```
+\normalsize
 
 ### 2.1.3. Processat de *renewable_generation_perc* i *renewable_generation_mw*
 
 Les columnes *renewable_generation_perc* i *renewable_generation_mw* contenen les unitats (% i MW) juntament amb el valor numèric i caldrà eliminar aquests strings per a poder tractar-les com a numèriques. També eliminarem el salt de línia de la columna *renewable_generation_perc*.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem les unitats de les columnes "renewable_generation_perc" i "renewable_generation_mw"
 esios_dataset$renewable_generation_perc <- gsub("%", "", 
@@ -122,12 +133,14 @@ esios_dataset$renewable_generation_perc <- gsub("\n", "",
 esios_dataset <- esios_dataset %>% 
   mutate_at(vars(date, hour, energy_source), funs(gsub(" ", "", .)))
 ```
+\normalsize
 
 ### 2.1.4 Processat dels separadors decimals i de milers, i transformació a columnes numèriques
 
 Eliminem els separadors de milers de les columnes numèriques i substituïm els 
 separadors decimals per un punt.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Eliminem els separadors de milers de les columnes numèriques
 esios_dataset <- esios_dataset %>% 
@@ -142,9 +155,11 @@ esios_dataset <- esios_dataset %>%
   energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
   renewable_generation_perc), funs(gsub(",", ".", ., fixed = TRUE)))
 ```
+\normalsize
 
 Finalment, transformem les columnes que haurien de ser numèriques a aquest tipus.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem les columnes numèriques a tipus numèric
 esios_dataset <- esios_dataset %>% 
@@ -153,9 +168,11 @@ esios_dataset <- esios_dataset %>%
   energy_free_market_mwh, free_market_share_perc, ref_market_share_perc,
   renewable_generation_perc, renewable_generation_mw), funs(as.numeric(.)))
 ```
+\normalsize
 
 Es pot veure com durant la transformació hi ha alguns valors nuls que haurem de tractar posteriorment. Finalment, comprovem el tipus de dades de cada columna del dataset.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Verifiquem el tipus de dades de cada columna del dataset
 sapply(esios_dataset, class)
@@ -163,11 +180,13 @@ sapply(esios_dataset, class)
 # Mostrem les primeres files del dataset
 head(esios_dataset)
 ```
+\normalsize
 
 ### 2.1.5. Transformar *date* i *energy_source* al format correcte
 
 Transformem la columna *date* al tipus data i la columna *energy_source* al tipus factor.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem la columna date al format correcte
 esios_dataset <- esios_dataset %>% 
@@ -179,18 +198,22 @@ esios_dataset <- esios_dataset %>% mutate(energy_source = as.factor(energy_sourc
 # Verifiquem el tipus de dades de cada columna del dataset
 sapply(esios_dataset, class)
 ```
+\normalsize
 
 ### 2.1.6. Tractament de valors nuls
 
 A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix, el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans els valors nuls, per poder fer un càlcul correcte del valor promig. En primer lloc, comprovem si hi ha valors nuls:
-  
+
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(esios_dataset))
 ```
+\normalsize
 
 Es pot veure que algunes columnes contenen valors nuls tot i que aquests representen un percentatge molt reduït si tenim en compte les dimensions del dataset (105120 files). Existeixen diversos mètodes per tractar-los, entre ells la imputació amb el valor promig. Tot i que aquest mètode podria ser vàlid en aquest cas, en treballar amb dades que presenten una forta dependència temporal es pot utilitzar la interpolació dels valors faltants:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Interpolació dels valors nuls
 esios_dataset <- esios_dataset %>% 
@@ -203,11 +226,13 @@ esios_dataset <- esios_dataset %>%
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(esios_dataset))
 ```
+\normalsize
 
 ### 2.1.7. Calculem el promig de totes les columnes numèriques en funció de la data i eliminem la columna *hora*
 
 Calculem el promig de totes les columnes numèriques del dataset tenint en compte els valors de les columnes *date* i *energy_source*. El promig es calcula perquè el dataset AEMET que tractarem posteriorment té una granularitat menor, és a dir, les dades estan agrupades per dia i no per dia i hora.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Calculem el promig de totes les columnes numèriques del dataset
 esios_dataset <- esios_dataset %>% 
@@ -220,11 +245,13 @@ esios_dataset <- esios_dataset %>% select(-hour)
 # Mostrem les primeres files del dataset
 head(esios_dataset)
 ```
+\normalsize
 
 ### 2.1.8. Calcular percentatge d'energia renovable respecte el total
 
 La columna *renewable_generation_perc* conté el percentatge d'energia renovable respecte el total. Per això, tornarem a recalcular-ne els valors tenint en compte les categories de la columna *energy_source* respecte les columnes *renewable_generation_mw* i *energy_total_mwh*.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Calculem el percentatge d'energia renovable respecte el total
 esios_dataset <- esios_dataset %>% 
@@ -233,28 +260,34 @@ esios_dataset <- esios_dataset %>%
 # Mostrem les primeres files del dataset
 summary(esios_dataset$renewable_generation_perc)
 ```
+\normalsize
 
 ### 2.1.9. Crear intervals per *renewable_generation_perc*
 
 La generació d'energia renovable té valors en tot el rang de percentatges, per tant, és una variable que es pot discretitzar en intervals fent servir el *binning*. Això ens permetrà reduir la quantitat de dades i simplificarà algunes de les 
 anàlisis posteriors.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Mostrar resum de la variable renewable_generation_perc
 summary(esios_dataset[, "renewable_generation_perc"])
 ```
+\normalsize
 
 Es consideraràn intervals amb percentatges negatius perquè hi ha valors de generació d'energia renovable negatius probablement deguts al consum energètic de la seva operació en dies en què no hi havia producció renovable. També es pot observar com hi ha algun valor amb percentatges de generació renovable superior. En concret és únicament un valor i, per tant, s'imputarà el valor 100 a la columna *renewable_generation_perc*.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Imputem el valor 100 a la columna renewable_generation_perc
 esios_dataset <- esios_dataset %>% 
   mutate(renewable_generation_perc = ifelse(renewable_generation_perc > 100, 
                                                 100, renewable_generation_perc))
 ```
+\normalsize
 
 Tot seguit creem els intervals:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creem intervals per renewable_generation_perc
 esios_dataset <- esios_dataset %>% 
@@ -263,22 +296,27 @@ esios_dataset <- esios_dataset %>%
                                         labels = c("Below 0", "0-35", "36-75", "76-100"),
                                         include.lowest = TRUE, right = TRUE))
 ```
+\normalsize
 
 Comprovem valors nuls de la variable *renewable_generation_perc*:
-  
+
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem valors nuls per columnes
 sapply(esios_dataset, function(x) sum(is.na(x)))
 ```
+\normalsize
 
 ### 2.1.10. Guardem el dataset ESIOS preprocessat
 
 Guardem el dataset ESIOS preprocessat en un fitxer CSV:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Guardem el dataset ESIOS preprocessat en un fitxer CSV
 write.csv(esios_dataset, file = "data/esios_dataset_preprocessed.csv", row.names = FALSE)
 ```
+\normalsize
 
 ## 2.2. Càrrega, preprocessat i selecció del dataset AEMET
 
@@ -287,14 +325,17 @@ write.csv(esios_dataset, file = "data/esios_dataset_preprocessed.csv", row.names
 Carreguem les dades del dataset AEMET en un dataframe. Aquestes dades s'han obtingut de la web https://opendata.aemet.es/ utilitzant l'API proporcionada. La informació continguda al dataset va des de l'1 d'Octubre del 2020 al 30 de Novembre del 2022. A més, el dataset està format per la data d'adquisició dels registres, el número identificador de l'estació meteorològica, el seu nom,
 la provincia, l'altitud sobre el nivell del mar (en metres), la temperatura mitjana diària (ºC), la precipitació diària (en mm), la temperatura mínima (ºC), l'hora i minuts d'adquisició de la temperatura mínima, la temperatura màxima (ºC), l'hora i minuts d'adquisició de la temperatura màxima, la direcció de la ratxa de vent màxima, la velocitat mitjana del vent (m/s), l'hora de la ratxa màxima, l'insolació (en hores), la pressió màxima (hPa), l'hora de la pressió màxima, la pressió mínima (hPa), l'hora de la pressió mínima.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem les dades del dataset AEMET
 aemet_dataset <- read.csv("data/aemet_dataset.csv", sep = ";", header = TRUE, 
                           stringsAsFactors = FALSE)
 ```
+\normalsize
 
 Renombrem les columnes del dataset per fer-les més descriptives, facilitar-ne el tractament i la unió amb les dades del *dataset ESIOS*.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Renombrem el nom de les columnes
 colnames(aemet_dataset) <- c("date", "climate_indicator", "station_name", 
@@ -310,6 +351,7 @@ colnames(aemet_dataset) <- c("date", "climate_indicator", "station_name",
 # Taula resum que representa les principals característiques de les diferents variables
 str(aemet_dataset)
 ```
+\normalsize
 
 El dataset conté 11 columnes i 190359 files. Totes les columnes són de tipus *character*, malgrat que la majoria d'elles haurien de ser de tipus numèric. Caldrà fer un preprocessat previ per poder tractar-les com a numèriques. A més, també es preprocessarà la columna *date* per a poder tractar-la com a data.
 
@@ -317,6 +359,7 @@ El dataset conté 11 columnes i 190359 files. Totes les columnes són de tipus *
 
 Com que els separadors decimals són diferents als que utilitza R, hem de processar-los per tal de poder-los transformar a columnes numèriques.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Processat dels separadors decimals
 aemet_dataset <- aemet_dataset %>% 
@@ -336,11 +379,13 @@ sapply(aemet_dataset, class)
 # Mostrem les primeres files del dataset
 head(aemet_dataset)
 ```
+\normalsize
 
 ### 2.2.3. Transformar les columnes al format correcte
 
 A continuació, transformarem les columnes *date* a tipus *Date*, les variables *climate_indicator*, *station_name*, *province*, *hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*,  *hour_max_pressure* i *hour_min_pressure* a factor.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Transformem la columna date a tipus Date
 aemet_dataset$date <- as.Date(aemet_dataset$date, format = "%Y-%m-%d")
@@ -354,29 +399,35 @@ aemet_dataset <- aemet_dataset %>%
 # Verificació del tipus de dades
 sapply(aemet_dataset, class)
 ```
+\normalsize
 
 ### 2.2.4. Filtrem les columnes innecessàries
 
 Filtrem les columnes *climate_indicator*, *station_name* i aqeulles que contenen les hores on s'han recollit els registres (*hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure*)
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Filtrem les columnes climate_indicator i station_name using select
 aemet_dataset <- aemet_dataset %>% 
   select(-climate_indicator, -station_name, -hour_min_temp, -hour_max_temp, 
           -hour_max_wind_speed, -hour_max_pressure, -hour_min_pressure)
 ```
+\normalsize
 
 ### 2.2.5. Tractament de valors nuls
 
 A l'apartat 3.1, se'ns demana identificar i gestionar els valors nuls. Tanmateix, el preprocessat que realitzarem a l'apartat següent requereix haver tractat abans els valors nuls, per poder fer un càlcul correcte del valor promig. En primer lloc, comprovem si hi ha valors nuls:
-  
+
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(aemet_dataset))
 ```
+\normalsize
 
 Es pot veure que algunes columnes contenen valors nuls. Existeixen diversos mètodes per tractar-los entre ells la imputació amb el valor promig. Tot i què aquest mètode podria ser vàlid en aquest cas, en treballar amb dades temporals, es pot utilitzar la interpolació dels valors faltants tal i com s'ha fet amb el dataset ESIOS:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Interpolació dels valors nuls
 aemet_dataset <- aemet_dataset %>% mutate_at(vars(avg_daily_temp, daily_precipitation, avg_wind_speed, max_wind_speed, max_wind_direction, 
@@ -385,11 +436,13 @@ aemet_dataset <- aemet_dataset %>% mutate_at(vars(avg_daily_temp, daily_precipit
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(aemet_dataset))
 ```
+\normalsize
 
 ### 2.2.6. Calcular promitjos de les variables numèriques
 
 Cada provincia pot tenir més d'una estació meteorològica. Així doncs, per tal de simplificar l'anàlisi de les dades, es procedirà a calcular el promig de les variables numèriques en base a les columnes *date* i *province*. 
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Agrupem les dades per province i calculem els promitjos
 aemet_dataset <- aemet_dataset %>% 
@@ -398,18 +451,22 @@ aemet_dataset <- aemet_dataset %>%
 # Mostrem les primeres files del dataset
 head(aemet_dataset)
 ```
+\normalsize
 
 ### 2.2.7. Creació de la variable *avg_pressure*
 
 A continuació, creem la variable *avg_pressure* a partir de les variables *max_pressure* i *min_pressure*, això ens permetrà simplicar el dataset i eliminar dades innecessàries.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creació de la variable avg_pressure
 aemet_dataset <- aemet_dataset %>% mutate(avg_pressure = (max_pressure + min_pressure) / 2)
 ```
+\normalsize
 
 Representem també la distribució de les dades per les variables *min_pressure*, *max_pressure* i *avg_pressure*:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Histograma de la pressió
 ggplot(aemet_dataset, aes(x = min_pressure)) + 
@@ -425,6 +482,7 @@ ggplot(aemet_dataset, aes(x = min_pressure)) +
   theme_bw() +
   theme(text = element_text(size = 30))
 ```
+\normalsize
 
 ### 2.2.8. Discretització de la variable *avg_pressure*
 
@@ -437,25 +495,31 @@ A continuació, discretitzem la variable *avg_pressure*. La pressió atmosfèric
 
 - Alta pressió (*Anticyclone*): els sistemes d'altes pressions estan associats amb temps estable i clar. Es caracteritza per pressions a nivell de superfície per sobre de 1015 hPa.
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Discretització de la pressió
 aemet_dataset <- aemet_dataset %>% mutate(avg_pressure_bin = cut(avg_pressure, breaks = c(-Inf, 1010, 1015, Inf), labels = c("Depression", "Normal", "Anticyclone")))
 ```
+\normalsize
 
 ### 2.2.9. Discretització de la insolació
 
 La variable *insolation* es discretitzarà en 3 intervals de 5 hores cadascun:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Discretització de la insolació
 aemet_dataset <- aemet_dataset %>% mutate(insolation_bin = cut(insolation, breaks = c(-Inf, 0, 5, Inf), labels = c("0-5", "5-10", "10+")))
 ```
+\normalsize
 
 ### 2.1.10. Guardem el dataset AEMET preprocessat
 
 Guardem el dataset AEMET preprocessat en un fitxer CSV:
 
+\scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Guardem el dataset AEMET preprocessat en un fitxer CSV
 write.csv(aemet_dataset, file = "data/aemet_dataset_preprocessed.csv", row.names = FALSE)
 ```
+\normalsize
