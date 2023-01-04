@@ -355,42 +355,15 @@ aemet_dataset <- aemet_dataset %>%
 sapply(aemet_dataset, class)
 ```
 
-### 2.2.4. Eliminem les columnes innecessàries
+### 2.2.4. Filtrem les columnes innecessàries
 
-En primer lloc, eliminem les columnes *climate_indicator*, *station_name* i aqeulles que contenen les hores on s'han recollit els registres (*hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure*)
+Filtrem les columnes *climate_indicator*, *station_name* i aqeulles que contenen les hores on s'han recollit els registres (*hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure*)
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les columnes climate_indicator i station_name using select
+# Filtrem les columnes climate_indicator i station_name using select
 aemet_dataset <- aemet_dataset %>% 
   select(-climate_indicator, -station_name, -hour_min_temp, -hour_max_temp, 
           -hour_max_wind_speed, -hour_max_pressure, -hour_min_pressure)
-```
-
-A continuació, es calcula la matriu de correlació entre les variables numèriques per veure aquelles que estan altament correlacionades i conservar-ne només una.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=6}
-# Calculem la matriu de correlació without NA values
-corr_matrix_aemet <- cor(aemet_dataset[, c("height_above_sea", 
-          "avg_daily_temp", "daily_precipitation", "min_daily_temp",
-          "max_daily_temp", "max_wind_direction", "avg_wind_speed", 
-          "max_wind_speed", "insolation", "max_pressure",
-          "min_pressure")], use = "complete.obs", 
-          method=c("pearson"))
-
-# Representem gràficament la matriu de correlació
-corrplot(corr_matrix_aemet, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 20, tl.cex = 0.8)
-```
-
-Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp* estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure* i *min_pressure*, aquestes també tenen una forta correlació. En aquest cas, només eliminarem la variable *height_above_sea*, ja què posteriorment es crearà una nova variable *avg_pressure* a partir de *max_pressure* i *min_pressure*. Finalment, també eliminarem la direcció del vent, ja què hem considerat que no és útil per al nostre anàlisis.
-
-Així doncs, les columnes que es volen conservar són: *date*, *province*, *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*, *max_pressure* i *min_pressure*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les columnes que no ens interessin
-aemet_dataset <- aemet_dataset %>% 
-  select(date, province, avg_daily_temp, daily_precipitation, avg_wind_speed, 
-          max_wind_speed, insolation, max_pressure, min_pressure)
 ```
 
 ### 2.2.5. Tractament de valors nuls
@@ -406,10 +379,8 @@ Es pot veure que algunes columnes contenen valors nuls. Existeixen diversos mèt
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Interpolació dels valors nuls
-aemet_dataset <- aemet_dataset %>% 
-  mutate_at(vars(avg_daily_temp, daily_precipitation, avg_wind_speed, 
-          max_wind_speed, insolation, max_pressure, min_pressure), 
-          funs(na.approx(.)))
+aemet_dataset <- aemet_dataset %>% mutate_at(vars(avg_daily_temp, daily_precipitation, avg_wind_speed, max_wind_speed, max_wind_direction, 
+                                    min_daily_temp, max_daily_temp, insolation, max_pressure, min_pressure), funs(na.approx(.)))
 
 # Comprovem si hi ha valors nuls a les dades per columnes
 colSums(is.na(aemet_dataset))
@@ -420,34 +391,13 @@ colSums(is.na(aemet_dataset))
 Cada provincia pot tenir més d'una estació meteorològica. Així doncs, per tal de simplificar l'anàlisi de les dades, es procedirà a calcular el promig de les variables numèriques en base a les columnes *date* i *province*. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Agrupem les dades per data i calculem els promitjos
+# Agrupem les dades per province i calculem els promitjos
 aemet_dataset <- aemet_dataset %>% 
-  group_by(date, province) %>% 
-  summarise_all(funs(mean(., na.rm = FALSE)))
+  group_by(date, province) %>% summarise_all(funs(mean(., na.rm = FALSE)))
 
 # Mostrem les primeres files del dataset
 head(aemet_dataset)
 ```
-
-Representem gràficament la distribució de les dades per les numèriques:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Histograma de les variables numèriques
-num_vars_aemet <- c("avg_daily_temp", "daily_precipitation", "avg_wind_speed", 
-          "max_wind_speed", "insolation", "max_pressure", "min_pressure")
-
-aemet_dataset %>%
-  select(num_vars_aemet) %>% gather() %>% filter(key != "date") %>% 
-  ggplot(aes(value)) + geom_histogram(bins = 50, fill = "#77aed3", alpha = 0.5) + 
-  facet_wrap(~key, scales = "free") + labs(x = "Valors", y = "Frequència") +
-  theme_bw() + theme(text = element_text(size =12))
-```
-
-En les gràfiques superiors observem
-
-# Afegir explicació del que es veu. Com és l'histograma? distribució normal, 
-# biax, etc.
-
 
 ### 2.2.7. Creació de la variable *avg_pressure*
 
@@ -455,12 +405,10 @@ A continuació, creem la variable *avg_pressure* a partir de les variables *max_
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Creació de la variable avg_pressure
-aemet_dataset <- aemet_dataset %>% 
-  mutate(avg_pressure = (max_pressure + min_pressure) / 2)
+aemet_dataset <- aemet_dataset %>% mutate(avg_pressure = (max_pressure + min_pressure) / 2)
 ```
 
-Representem també la distribució de les dades per les variables *min_pressure*,
-*max_pressure* i *avg_pressure*:
+Representem també la distribució de les dades per les variables *min_pressure*, *max_pressure* i *avg_pressure*:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Histograma de la pressió
@@ -478,61 +426,21 @@ ggplot(aemet_dataset, aes(x = min_pressure)) +
   theme(text = element_text(size = 30))
 ```
 
-Es pot veure que la distribució de les tres variables és molt semblant. Així 
-doncs, eliminem les variables *min_pressure* i *max_pressure*:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Eliminem les variables min_pressure i max_pressure
-aemet_dataset <- aemet_dataset %>% 
-  select(-min_pressure, -max_pressure)
-```
-
 ### 2.2.8. Discretització de la variable *avg_pressure*
 
-A continuació, discretitzem la variable *avg_pressure*. La pressió atmosfèrica
-es classifica en funció de l'alçada respecte un nivell de referència, normalment
-el nivell del mar.
+A continuació, discretitzem la variable *avg_pressure*. La pressió atmosfèrica es classifica en funció de l'alçada respecte un nivell de referència, normalment el nivell del mar. Hi ha tres categories principals:
 
-Hi ha tres categories principals:
+- Baixa pressió (*Depression*): els sistemes de baixes pressions estan associats amb núvols, precipitació i temps generalment inestable. Es caracteritza per pressions a nivell de superfície per sota de 1010 hPa.
 
-- Baixa pressió (*Depression*): els sistemes de baixes pressions estan associats
-  amb núvols, precipitació i temps generalment inestable. Es caracteritza per
-  pressions a nivell de superfície per sota de 1010 hPa.
-
-- Pressió normal (*Normal*): aquesta es refereix a una superfície de pressió que 
-  està a la mateixa alçada que el nivell de referència. La pressió normal està
-  associada amb temps "normal". Es caracteritza per pressions a nivell de
+- Pressió normal (*Normal*): aquesta es refereix a una superfície de pressió que està a la mateixa alçada que el nivell de referència. La pressió normal està associada amb temps "normal". Es caracteritza per pressions a nivell de
   superfície al voltant de 1013.25 hPa.
 
-- Alta pressió (*Anticyclone*): els sistemes d'altes pressions estan associats
-  amb temps estable i clar. Es caracteritza per pressions a nivell de superfície
-  per sobre de 1015 hPa.
+- Alta pressió (*Anticyclone*): els sistemes d'altes pressions estan associats amb temps estable i clar. Es caracteritza per pressions a nivell de superfície per sobre de 1015 hPa.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Discretització de la pressió
-aemet_dataset <- aemet_dataset %>% 
-  mutate(avg_pressure_bin = cut(avg_pressure, breaks = c(-Inf, 1010, 1015, Inf), 
-                            labels = c("Depression", "Normal", "Anticyclone")))
+aemet_dataset <- aemet_dataset %>% mutate(avg_pressure_bin = cut(avg_pressure, breaks = c(-Inf, 1010, 1015, Inf), labels = c("Depression", "Normal", "Anticyclone")))
 ```
-
-Es representa el gràfic de barres per a la variable *avg_pressure_bin*:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de barres de la pressió
-ggplot(aemet_dataset, aes(x = avg_pressure_bin)) + 
-  geom_bar(fill = "blue", color = "black", alpha = 0.5) +
-  scale_x_discrete(name = "Pressió mitjana") +
-  scale_y_continuous(name = "Nombre d'observacions") +
-  labs(title = "Distribució de la pressió mitjana") +
-  theme_bw() +
-  theme(text = element_text(size = 30))
-  theme(plot.width = 200, plot.height = 100)
-```
-
-Es pot veure que la majoria de les observacions (35000 comptes) es corresponen 
-amb pressions atmosfèriques associades a la depressió. Tanmateix, això no estarà
-sempre associat amb precipitació o mal temps, ja què dependrà d'altres variables
-com *insolation* o *daily_precipitation*.
 
 ### 2.2.9. Discretització de la insolació
 
@@ -540,304 +448,14 @@ La variable *insolation* es discretitzarà en 3 intervals de 5 hores cadascun:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Discretització de la insolació
-aemet_dataset <- aemet_dataset %>% 
-  mutate(insolation_bin = cut(insolation, breaks = c(-Inf, 0, 5, Inf), 
-                                      labels = c("0-5", "5-10", "10+")))
+aemet_dataset <- aemet_dataset %>% mutate(insolation_bin = cut(insolation, breaks = c(-Inf, 0, 5, Inf), labels = c("0-5", "5-10", "10+")))
 ```
 
-# Nota: falta afegir una descripció
+### 2.1.10. Guardem el dataset AEMET preprocessat
 
-A continuació, representem la insolació discretitzada:
+Guardem el dataset AEMET preprocessat en un fitxer CSV:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Gràfic de barres de la insolació
-ggplot(aemet_dataset, aes(x = insolation_bin)) + 
-  geom_bar(fill = "red", color = "black", alpha = 0.5) +
-  scale_x_discrete(name = "Insolació") +
-  scale_y_continuous(name = "Nombre d'observacions") +
-  labs(title = "Distribució de la insolació") +
-  theme_bw() +
-  theme(text = element_text(size = 30))
+# Guardem el dataset AEMET preprocessat en un fitxer CSV
+write.csv(aemet_dataset, file = "data/aemet_dataset_preprocessed.csv", row.names = FALSE)
 ```
-
-Es pot veure com predominen els dies assolellats, ja que les hores d'insolació
-es troben en els intervals 5-10 hores o 10+ hores. Per tant, això indica que la
-pressió atmosfèrica, tot i ser un indicador d'inestabilitat meteorològica, no 
-sembla suficient per determinar la insolació o la precipitació.
-
-Finalment, presentem un resum del dataset AEMET processat:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Resum del dataset
-summary(aemet_dataset)
-```
-
-## 2.3 Unió dels dos datasets
-
-Unim els dos datasets per tal de poder fer l'anàlisi de les dades. La columna
-que utilitzarem és la data:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Unim els dos datasets
-final_dataset <- left_join(esios_dataset, aemet_dataset, by = c("date"))
-
-# Mostrem les primeres files del dataset
-head(final_dataset)
-```
-
-Finalment, presentem les dimensions finals del dataset i la tipologia de columna:
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Dimensions del dataset
-dim(final_dataset)
-
-# Tipologia de columna
-sapply(final_dataset, class)
-
-# Check null values
-colSums(is.na(final_dataset))
-
-# Resum dataset
-summary(final_dataset)
-```
-
-Es pot veure com el dataset final té gairebé 228.000 files i 16 columnes.
-D'aquestes, tenim una variable tipus *date*, 9 variables numèriques i 6
-variables categòriques.
-
-## 2.4 Guardar dataset final en un fitxer csv
-
-Guardem el dataset final en un fitxer csv.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Guardem el dataset final en un fitxer csv
-write.csv(final_dataset, file = "data/final_dataset.csv", row.names = FALSE)
-```
-
-# 3. Neteja de les dades
-
-## 3.1. Gestió dels zeros o elements buits
-
-Durant els apartats de preprocessat, ja s'ha pogut identificar que hi ha elements
-buits en el dataset. Degut a la necessitat de reduir la quantitat de dades com 
-també assegurar que els datasets ESIOS i AEMET tenien la mateixa granularitat per
-poder-los unir, s'ha decidit tractar els valors nuls en els apartats 2.1.7 i 2.2.5.
-El tractament que s'ha fet ha estat l'imputació de valors a partir de l'interpolació
-lineal, ja què estem treballant amb dades temporals. Per tant, el dataset ja no
-conté valors buits:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Resum dels elements buits
-summary(is.na(final_dataset))
-```
-
-## 3.2. Identificació i gestió de valors extrems
-
-Generalment, es consideren com a outliers tots aquells valors que es troben molt
-lluny dels valors de la resta de la mostra. En una distribució normal, això
-equival a $\pm 3\sigma$ respecte el valor promig. Per això, podem estandarditzar
-les columnes numèriques i representar els boxplots:
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Creem variable amb columnes numèriques
-num_vars <- c("avg_total_price_eur_mwh", "energy_total_mwh", 
-              "renewable_generation_perc", "avg_daily_temp", 
-              "daily_precipitation", "avg_wind_speed", 
-              "max_wind_speed", "insolation", "avg_pressure")
-
-# Subset del dataset amb les columnes numèriques sense la columna date
-subset_final <- final_dataset %>% select(all_of(num_vars))
-subset_final <- subset_final[,-1]
-
-# Estandarditzem les columnes numèriques entre -1 i 1
-normalized_data <- scale(subset_final, center = TRUE, scale = TRUE)
-
-# Transposem les dades, eliminem la columna Var1 i renombrem les columnes
-normalized_data <- melt(normalized_data)
-normalized_data <- normalized_data[,-1]
-colnames(normalized_data) <- c("Variables", "Values")
-
-# Boxplots de les variables estandarditzades
-ggplot(normalized_data, aes(y = Variables, x = Values)) +
-  geom_boxplot() +
-  theme_bw() +
-  theme(text = element_text(size = 20))
-```
-
-A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les
-variables numèriques. En primer lloc, tenim les variables *avg_pressure* i
-*insolation* que no tenen outliers. En segon lloc, tenim les variables 
-*avg_daily_temp*, *renewable_generation_perc*, *energy_total_mwh* i 
-*avg_total_price_eur_mwh* que tenen alguns outliers. Finalment, tenim les
-columnes *max_wind_speed*, *avg_wind_speed* i *daily_precipitation* que tenen un
-nombre molt elevat d'outliers, essent la darrera la variable amb més outliers.
-
-# Faltaria descriure una mica més els motius de perquè hi pot haver outliers si hi ha espai
-
-Tanmateix, aquestes són dades que provenen de fonts fiables. A més, les dades
-d'origen meteorològic estan sotmeses a una gran aleatorietat deguda a la naturalesa
-caòtica d'aquest tipus de sistemes. D'altra banda, la fluctuació de les variables
-energètiques té també un alt component aleatori ja que estan influenciades per
-factors externs com la meteorologia, la demanda, l'especulació dels mercats, etc. 
-Per tant, la presència d'outliers no està ocasionada per registres incorrectes
-sinó per la naturalesa de les dades i no els eliminarem de les nostres anàlisis.
-
-# 4. Anàlisi de les dades
-
-## 4.1. Selecció dels grups de dades a analitzar i tipus d'anàlisis que es portaran a terme
-
-### 4.1.1. Anàlisi producció energia renovable en el preu de l'electricitat
-
-Analitzarem la relació que té globalment la producció d'energia 
-renovable (*renewable_generation_perc*) en el preu de l'electricitat 
-(*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant
-per  *energy_source=total*.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Subset de les dades per energy_source = total
-subset_energy_source_total <- final_dataset %>% filter(energy_source == "total")
-```
-
-### 4.1.2. ???
-
-També analitzarem la contribució de la meteorologia en la producció d'energia
-renovable. 
-
-
-
-En segon lloc, volem conèixer quina és la relació entre *avg_daily_temp*.
-*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
-*avg_pressure* i *energy_source* respecte *renewable_generation_perc*.
-  
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Tipus de variables
-sapply(final_dataset, function(x) class(x))
-```
-
-### 4.1.3. ???
-
-
-### 4.1.4. ???
-
-
-## 4.2. Comprovació de la normalitat i homogeneïtat de la variància
-
-### 4.2.1. Anàlisi producció energia renovable en el preu de l'electricitat
-
-Representar QQ-plots in a grid
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Creem un grid amb els QQ-plots
-grid.arrange(
-  qplot(sample = subset_energy_source_total$renewable_generation_perc, 
-        xlab = "renewable_generation_perc") +
-        labs(title=" QQ-plot of renewable_generation_perc") +
-        theme_bw() +
-        theme(text = element_text(size = 20)),
-  qplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
-        xlab = "avg_total_price_eur_mwh") +
-        labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-        theme_bw() +
-        theme(text = element_text(size = 20)), ncol = 2)
-```
-
-Representar QQ-plots in a grid using qqnorm and qqline
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Creem un grid amb els QQ-plots fent servir ggqqplot
-# grid.arrange(
-#   ggqqplot(sample = subset_energy_source_total$renewable_generation_perc, 
-#            xlab = "renewable_generation_perc") +
-#            labs(title=" QQ-plot of renewable_generation_perc") +
-#            theme_bw() +
-#            theme(text = element_text(size = 20)),
-#   ggqqplot(sample = subset_energy_source_total$avg_total_price_eur_mwh, 
-#            xlab = "avg_total_price_eur_mwh") +
-#            labs(title=" QQ-plot of avg_total_price_eur_mwh") +
-#            theme_bw() +
-#            theme(text = element_text(size = 20)), ncol = 2)
-```
-
-
-Per comprovar la normalitat de les dades, utilitzarem el test de Shapiro-Wilk.
-Aquest test ens permet comprovar si les dades provenen d'una distribució normal
-o no. Per tant, si el p-value és menor que 0.05, les dades no provenen d'una
-distribució normal.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem la normalitat de les dades
-# shapiro.test(subset_energy_source_total$renewable_generation_perc)
-# shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
-```
-
-## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
-
-Matriu de correlació entre *avg_daily_temp*.
-*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
-*avg_pressure* i *renewable_generation_perc*
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la matriu de correlació without NA values
-corr_matrix_data <- cor(final_dataset[, c("avg_daily_temp", "daily_precipitation",
-          "avg_wind_speed", "max_wind_speed", "insolation", "avg_pressure",
-          "renewable_generation_perc")], use = "complete.obs", 
-          method=c("pearson"))
-
-# Representem gràficament la matriu de correlació
-corrplot(corr_matrix_data, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 45, tl.cex = 1.5)
-```
-
-Calculem la regressió entre les variables *avg_daily_temp*.
-*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
-*avg_pressure*, *energy_source* i *renewable_generation_perc*.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la regressió lineal entre les variables
-regression <- lm(renewable_generation_perc ~ avg_daily_temp + daily_precipitation + 
-                  avg_wind_speed + max_wind_speed + insolation + avg_pressure + 
-                  energy_source, data = final_dataset)
-
-summary(regression)
-```
-
-
-# Contribucions
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-df <- data.frame(Contribucions=rep(c('Investigació prèvia', 'Redacció de les respostes', 'Desenvolupament del codi', 'Participació al vídeo'), each=1),
-                 Signatura=rep(c('Albert Queraltó, Esther Manzano', 'Albert Queraltó,     Esther Manzano', 'Albert Queraltó, Esther Manzano', 'Albert Queraltó, Esther Manzano'), times=1))
-
-df
-```
-
-
-# Referències
-
-[1] Alexis Romero, "La guerra a Ucraïna i la creixent inflació ressusciten el 
-debat sobre la intervenció del mercat elèctric" (Público, 01/03/2022). 
-https://www.publico.es/public/encariment-preus-guerra-ucraina-i-creixent-inflacio-ressusciten-debat-intervencio-mercat-electric.html
-
-[2] Vicenç Batalla, "La UE frenarà la pujada de l'electricitat per la guerra" 
-(El Punt Avui, 12/03/2022).
-https://www.elpuntavui.cat/politica/article/17-politica/2111814-la-ue-frenara-la-pujada-de-l-electricitat-per-la-guerra.html
-
-[3] elnacional.cat, "La situació actual de les energies renovables a Catalunya: 
-què tenim i cap on anem?" (El Nacional, 06/06/2022).
-https://www.elnacional.cat/ca/branded/energies-renovables-catalunya-cap-anem_685709_102.html
-
-[4] Ourworldindata.org, "La caiguda del preu de l'electricitat a partir de fonts
-renovables" (Ourworldindata.org, 2022).
-https://ca.dsnsolar.com/info/the-price-decline-of-electricity-from-renewabl-70291585.html
-
-[5] naciodigital.cat, "Tindrem prou energia només amb les renovables?" 
-(Nació Digital, 2022).
-https://www.naciodigital.cat/noticia/230097/canvi-climatic-tindrem-prou-energia-nomes-renovables
-
-[6] Esther Manzano i Albert Queraltó, "Webscraping of Energy Prices and Renewable
-Energy Production" (GitHub, 2022).
-https://github.com/albert-queralto/scraping-energy-prices-spain
-
-[7] Esther Manzano i Albert Queraltó, "Evolution of the price of electricity and
-the renewable energy production in Spain" (Zenodo, 2022).
-https://doi.org/10.5281/zenodo.7335618
