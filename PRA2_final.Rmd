@@ -439,53 +439,108 @@ A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les 
 
 # 4. Anàlisi de les dades
 
-## 4.1. Anàlisi producció energia renovable i la meteorologia en el preu de l'electricitat
+## 4.1. Anàlisi de la correlació entre variables numèriques
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
-Analitzarem la relació que té globalment la producció d'energia renovable (*renewable_generation_perc*) i la meteorologia en el preu de l'electricitat (*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant per *energy_source=total*.
+Seleccionarem les variables numèriques *avg_total_price_eur_mwh*, *energy_total_mwh*, *renewable_generation_perc*, *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure* per crear una matriu de correlació lineal:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Subset de les dades per energy_source = total
-subset_energy_source_total <- final_dataset %>% filter(energy_source == "total")
+# Seleccionem les variables numèriques
+numeric_variables <- c("avg_total_price_eur_mwh", "energy_total_mwh", "renewable_generation_perc", 
+                       "avg_daily_temp", "daily_precipitation", "avg_wind_speed", "max_wind_speed", 
+                       "insolation", "avg_pressure")
+
+# Creem un subset amb les variables numèriques
+subset_numeric_variables <- final_dataset[, numeric_variables]
 ```
 \normalsize
 
-L'anàlisi que aplicarem serà una regressió lineal multivariable.
-
-Representar QQ-plots in a grid
+També estandarditzarem les variables per reduir la influència que poden tenir els diferents rangs de dades:
 
 \scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=14, fig.align='center'}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Estandaritzem les variables numèriques
+standard_num_vars <- scale(subset_numeric_variables)
 
+# Unim el dataset standard_num_vars amb les columnes que mancan de final_dataset
+standard_num_vars <- cbind(standard_num_vars, 
+      final_dataset[,c("date", "energy_source", "avg_pressure_bin", "province",
+                            "insolation_bin", "renewable_generation_perc_bin")])
+
+summary(standard_num_vars)
 ```
 \normalsize
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-Representar QQ-plots in a grid using qqnorm and qqline
+Comprovem la normalitat de les variables numèriques meteorològiques *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure* fent servir gràfics Quantil-Quantil:
 
 \scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=10, fig.align='center'}
+# Gràfic quantile-quantile
+qq_adt <- ggplot(standard_num_vars, aes(sample = avg_daily_temp)) + 
+  stat_qq() + stat_qq_line() + 
+  labs(x="Quantils teòrics", y="Quantils avg_daily_temp", 
+       title="avg_daily_temp") + theme_bw() + theme(text = element_text(size = 11))
 
+qq_dp <- ggplot(standard_num_vars, aes(sample = daily_precipitation)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils daily_precipitation",
+    title="daily_precipitation") + theme_bw() + 
+  theme(text = element_text(size = 11))
+
+qq_aws <- ggplot(standard_num_vars, aes(sample = avg_wind_speed)) + 
+  stat_qq() + stat_qq_line() + 
+  labs(x="Quantils teòrics", y="Quantils avg_wind_speed", 
+    title="avg_wind_speed") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_mws <- ggplot(standard_num_vars, aes(sample = max_wind_speed)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils max_wind_speed", 
+       title="max_wind_speed") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_i <- ggplot(standard_num_vars, aes(sample = insolation)) + 
+  stat_qq() + stat_qq_line() + 
+  labs(x="Quantils teòrics", y="Quantils insolation", 
+       title="insolation") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_avg_p <- ggplot(standard_num_vars, aes(sample = avg_pressure)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils avg_pressure", 
+       title="avg_pressure") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_avg_price <- ggplot(standard_num_vars, aes(sample = avg_total_price_eur_mwh)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils avg_total_price_eur_mwh", 
+       title="avg_total_price_eur_mwh") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_et <- ggplot(standard_num_vars, aes(sample = energy_total_mwh)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils energy_total_mwh", 
+       title="energy_total_mwh") + theme_bw() + theme(text = element_text(size = 11))
+
+qq_rgp <- ggplot(standard_num_vars, aes(sample = renewable_generation_perc)) + 
+  stat_qq() + stat_qq_line() +
+  labs(x="Quantils teòrics", y="Quantils renewable_generation_perc", 
+       title="renewable_generation_perc") + theme_bw() + theme(text = element_text(size = 11))
+
+grid.arrange(qq_adt, qq_dp, qq_aws, qq_mws, qq_i, qq_avg_p, qq_avg_price, qq_et,
+             qq_rgp, ncol=3, top="Quantile-Quantile plots")
 ```
 \normalsize
 
-Per comprovar la normalitat de les dades, utilitzarem el test de Shapiro-Wilk.
-Aquest test ens permet comprovar si les dades provenen d'una distribució normal
-o no. Per tant, si el p-value és menor que 0.05, les dades no provenen d'una
-distribució normal.
+El *QQ-plot* permet observar com de propera és la distribució de les dades a la normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà la distribució. Per tant, podem dir què *avg_daily_temp* i *energy_total_mwh* segueixen una distribució pràcticament normal tot i què les cues tenen bastantes observacions (veure seccions 2.1.10 i 2.2.3). La resta de variables no presenten distribucions normals; l'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW, mentre què *renewable_generation_perc* presenta una doble distribució, però aquesta té moltes més observacions en el rang de percentatges entre 0 i 35% (veure secció 2.1.10). La variable *insolation* té una distribució bastant uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables *daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation* (veure secció 2.2.3).
 
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem la normalitat de les dades
-# shapiro.test(subset_energy_source_total$renewable_generation_perc)
-# shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
-```
-\normalsize
+# falta la variancia per les variables numèriques
+
+
+
+
 
 **Proves estadístiques**
+
 
 
 
@@ -529,50 +584,9 @@ L'anàlisi que aplicarem serà una regressió logística multivariable on *renew
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-Comprovem la normalitat de les variables meteorològies *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure* fent servir gràfics Quantil-Quantil:
+La normalitat de les variables numèriques s'ha comprovat en l'apartat 4.1. En aquest cas, ens centrarem en la variable *energy_source*, es pot veure que té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt.
 
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=4, fig.width=10, fig.align='center'}
-# Gràfic quantile-quantile
-qq_adt <- ggplot(energy_source_type_standard, aes(sample = avg_daily_temp)) + 
-  stat_qq() + stat_qq_line() + 
-  labs(x="Quantils teòrics", y="Quantils avg_daily_temp", 
-       title="avg_daily_temp") + theme_bw() + theme(text = element_text(size = 11))
-
-qq_dp <- ggplot(energy_source_type_standard, aes(sample = daily_precipitation)) + 
-  stat_qq() + stat_qq_line() +
-  labs(x="Quantils teòrics", y="Quantils daily_precipitation",
-    title="daily_precipitation") + theme_bw() + 
-  theme(text = element_text(size = 11))
-
-qq_aws <- ggplot(energy_source_type_standard, aes(sample = avg_wind_speed)) + 
-  stat_qq() + stat_qq_line() + 
-  labs(x="Quantils teòrics", y="Quantils avg_wind_speed", 
-    title="avg_wind_speed") + theme_bw() + theme(text = element_text(size = 11))
-
-qq_mws <- ggplot(energy_source_type_standard, aes(sample = max_wind_speed)) + 
-  stat_qq() + stat_qq_line() +
-  labs(x="Quantils teòrics", y="Quantils max_wind_speed", 
-       title="max_wind_speed") + theme_bw() + theme(text = element_text(size = 11))
-
-qq_i <- ggplot(energy_source_type_standard, aes(sample = insolation)) + 
-  stat_qq() + stat_qq_line() + 
-  labs(x="Quantils teòrics", y="Quantils insolation", 
-       title="insolation") + theme_bw() + theme(text = element_text(size = 11))
-
-qq_avg_p <- ggplot(energy_source_type_standard, aes(sample = avg_pressure)) + 
-  stat_qq() + stat_qq_line() +
-  labs(x="Quantils teòrics", y="Quantils avg_pressure", 
-       title="avg_pressure") + theme_bw() + theme(text = element_text(size = 11))
-
-grid.arrange(qq_adt, qq_dp, qq_aws, qq_mws, qq_i, qq_avg_p, ncol=3, 
-             top="Quantile-Quantile plots")
-```
-\normalsize
-
-El *QQ-plot* permet observar com de propera és la distribució de les dades a la normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà la distribució. Per tant, podem dir què *avg_daily_temp* segueix una distribució pràcticament normal tot i què les cues tenen bastantes observacions (veure secció 2.2.3). La resta de variables no presenten distribucions normals; *insolation* té una distribució bastant uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables *daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation* (veure secció 2.2.3). Pel que fa a la variable *energy_source*, es pot veure que té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt.
-
-Comprovem l'homogeneitat de les variàncies:
+Comprovem l'homogeneitat de les variàncies respecte la variable *renewable_generation_perc_bin*:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -632,11 +646,53 @@ r_log
 Els resultats mostren com l'àrea sota la corva té un valor de 0.97, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
 
 
+
+
+
+
+
+
 ### 4.3. Anàlisi de ....
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
+Analitzarem la relació que té globalment la producció d'energia renovable (*renewable_generation_perc*) i la meteorologia en el preu de l'electricitat (*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant per *energy_source=total*.
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Subset de les dades per energy_source = total
+subset_energy_source_total <- final_dataset %>% filter(energy_source == "total")
+```
+\normalsize
+
+L'anàlisi que aplicarem serà una regressió lineal multivariable.
+
+Representar QQ-plots in a grid
+
+
+
 **Comprovació de la normalitat i homogeneïtat de la variància**
+
+Representar QQ-plots in a grid using qqnorm and qqline
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+\normalsize
+
+Per comprovar la normalitat de les dades, utilitzarem el test de Shapiro-Wilk.
+Aquest test ens permet comprovar si les dades provenen d'una distribució normal
+o no. Per tant, si el p-value és menor que 0.05, les dades no provenen d'una
+distribució normal.
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Comprovem la normalitat de les dades
+# shapiro.test(subset_energy_source_total$renewable_generation_perc)
+# shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
+```
+\normalsize
 
 **Proves estadístiques**
 
@@ -684,25 +740,6 @@ regression <- glm(formula = renewable_generation_perc_bin ~ avg_daily_temp + dai
 summary(regression)
 ```
 \normalsize
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Contribucions
 
