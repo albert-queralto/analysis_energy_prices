@@ -216,7 +216,7 @@ Es calcula la matriu de correlació entre les variables numèriques per veure aq
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=8, fig.align='center'}
-# Calculem la matriu de correlació without NA values
+# Calculem la matriu de correlació
 corr_matrix_aemet <- cor(aemet_dataset[, c("height_above_sea", "avg_daily_temp", 
                       "daily_precipitation", "min_daily_temp", "max_daily_temp", 
                       "max_wind_direction", "avg_wind_speed", "max_wind_speed", 
@@ -537,46 +537,34 @@ El *QQ-plot* permet observar com de propera és la distribució de les dades a l
 
 
 
-
-
 **Proves estadístiques**
 
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=8, fig.align='center'}
+# Calculem la matriu de correlació
+corr_matrix_data <- cor(standard_num_vars[, numeric_variables], 
+                        use = "complete.obs", method=c("pearson"))
 
+# Representem gràficament la matriu de correlació
+corrplot(corr_matrix_data, method = "number", type = "lower", 
+          tl.col = "black", tl.srt = 10, tl.cex = 0.7, number.cex = 0.7)
+```
+\normalsize
 
-
+La matriu de correlació de les variables numèriques mostra una forta correlació lineal positiva entre les variables *max_wind_speed* i *avg_wind_speed*. Això és degut a què com més vent fa, major serà la velocitat màxima, a més, el càlcul de la velocitat promitja contindrà també els valors màxims. Per tant, en posteriors anàlisis es podrà descartar una de les dues. També s'observa una moderada dependència lineal positiva entre les variables *insolation* i *avg_daily_temp*. Això té sentit ja què els dies més càlids solen estar associats amb bon temps i aquests es troben normalment a l'estiu on la duració del dia és més llarga, augmentant les hores d'insolació. Tanmateix, la correlació no sembla suficient com per descartar cap de les dues variables en estudis posteriors. També s'observa una correlació negativa entre les variables *insolation* i *daily_precipitation*. Això és degut a què els dies plujosos, els núvols tapen el sol i, per tant, hi ha menys hores d'insolació. Les variables *max_wind_speed* i *daily_precipitation* tenen una correlació lleugerament positiva, ja què alguns dies plujosos sol fer vent, mentre què les variables *avg_pressure* i *avg_daily_temp* tenen una correlació lleugerament positiva, ja què els dies amb anticicló solen ser dies més càlids, ja què els núvols bloquejen part de la radiació solar quan fa mal temps. També s'observen altres correlacions lineals amb coeficients per sota de 0.2 entre les variables *avg_wind_speed* i *daily_precipitation*, *insolation
 
 
 ## 4.2.  Anàlisi de *renewable_generation_perc_bin* en funció de la meteorologia i *energy_source*
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
-Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el percentatge de produccio d'energia renovable. Per això, crearem un subset de les dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable *renewable_generation_perc_bin* conté 3 grups (veure gràfic de barres a la secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a l'energia hidroelèctrica.
+Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el percentatge de produccio d'energia renovable. Per això, crearem un subset de les dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable *renewable_generation_perc_bin* conté 3 grups (veure gràfic de barres a la secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a l'energia hidroelèctrica. Per últim, descartarem la variable *avg_wind_speed* ja què té una forta correlació amb la variable *max_wind_speed* (veure secció 4.1).
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Subset de les dades per energy_source != total
-subset_energy_source_type <- final_dataset %>% 
+subset_energy_source_type <- standard_num_vars %>% 
   filter(energy_source != "total", renewable_generation_perc_bin != "Below 0")
-```
-\normalsize
-
-També estandarditzarem les variables per reduir la influència que poden tenir els diferents rangs de dades:
-
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Filtrem el dataset
-energy_source_type_num <- subset_energy_source_type %>%
-  select(c("avg_daily_temp", "daily_precipitation", "avg_wind_speed", 
-           "max_wind_speed", "insolation", "avg_pressure"))
-# Estandaritzem les variables numèriques
-energy_source_type_num <- scale(energy_source_type_num)
-
-# Unim el dataset energy_source_type_num amb les columnes energy_source i renewable_generation_perc_bin
-energy_source_type_standard <- cbind(energy_source_type_num, 
-                       subset_energy_source_type[,c("energy_source", 
-                                   "renewable_generation_perc_bin")])
-
-summary(energy_source_type_standard)
 ```
 \normalsize
 
@@ -586,17 +574,21 @@ L'anàlisi que aplicarem serà una regressió logística multivariable on *renew
 
 La normalitat de les variables numèriques s'ha comprovat en l'apartat 4.1. En aquest cas, ens centrarem en la variable *energy_source*, es pot veure que té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt.
 
+
+
+
+
+
 Comprovem l'homogeneitat de les variàncies respecte la variable *renewable_generation_perc_bin*:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem la homogeneïtat de les variàncies
-leveneTest(energy_source_type_standard$avg_daily_temp ~ energy_source_type_standard$renewable_generation_perc_bin)
-leveneTest(energy_source_type_standard$daily_precipitation ~ energy_source_type_standard$renewable_generation_perc_bin)
-leveneTest(energy_source_type_standard$avg_wind_speed ~ energy_source_type_standard$renewable_generation_perc_bin)
-leveneTest(energy_source_type_standard$max_wind_speed ~ energy_source_type_standard$renewable_generation_perc_bin)
-leveneTest(energy_source_type_standard$insolation ~ energy_source_type_standard$renewable_generation_perc_bin)
-leveneTest(energy_source_type_standard$avg_pressure ~ energy_source_type_standard$renewable_generation_perc_bin)
+leveneTest(subset_energy_source_type$avg_daily_temp ~ subset_energy_source_type$renewable_generation_perc_bin)
+leveneTest(subset_energy_source_type$daily_precipitation ~ subset_energy_source_type$renewable_generation_perc_bin)
+leveneTest(subset_energy_source_type$max_wind_speed ~ subset_energy_source_type$renewable_generation_perc_bin)
+leveneTest(subset_energy_source_type$insolation ~ subset_energy_source_type$renewable_generation_perc_bin)
+leveneTest(subset_energy_source_type$avg_pressure ~ subset_energy_source_type$renewable_generation_perc_bin)
 ```
 \normalsize
 
@@ -607,9 +599,11 @@ El test de Levene rebutja la hipòtesi nul·la per les variables numèriques que
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Calculem la regressió logística entre les variables
-logistic_renew_perc <- glm(formula = renewable_generation_perc_bin ~ avg_daily_temp + daily_precipitation + 
-                  avg_wind_speed + max_wind_speed + insolation + avg_pressure + 
-                  energy_source, data = energy_source_type_standard, family = binomial(link = logit))
+logistic_renew_perc <- glm(renewable_generation_perc_bin ~ avg_daily_temp + 
+                             daily_precipitation +  max_wind_speed + 
+                             insolation + avg_pressure + energy_source, 
+                           data = energy_source_type_standard, 
+                           family = binomial(link = logit))
 
 summary(logistic_renew_perc)
 ```
@@ -708,23 +702,7 @@ distribució normal.
 
 ## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
 
-Matriu de correlació entre *avg_daily_temp*.
-*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
-*avg_pressure* i *renewable_generation_perc*
 
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la matriu de correlació without NA values
-corr_matrix_data <- cor(final_dataset[, c("avg_daily_temp", "daily_precipitation",
-          "avg_wind_speed", "max_wind_speed", "insolation", "avg_pressure",
-          "renewable_generation_perc")], use = "complete.obs", 
-          method=c("pearson"))
-
-# Representem gràficament la matriu de correlació
-corrplot(corr_matrix_data, method = "circle", type = "lower", 
-          tl.col = "black", tl.srt = 45, tl.cex = 1.5)
-```
-\normalsize
 
 Calculem la regressió entre les variables *avg_daily_temp*.
 *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
