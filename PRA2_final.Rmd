@@ -61,12 +61,10 @@ Carreguem les dades del *dataset ESIOS* creat a la pràctica 1 i preprocessat (v
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem els datasets en un dataframe
-esios_dataset <- read.csv('data/esios_dataset_preprocessed.csv', header = TRUE, sep=",")
+esios_dataset <- read.csv('data/esios_dataset_preprocessed.csv', header = TRUE, sep=",", stringsAsFactors = TRUE)
 
-# Transformem les columnes date, energy_source i renewable_generation_perc_bin al format correcte
+# Transformem la columna date al format correcte
 esios_dataset$date <- as.Date(esios_dataset$date, format = "%Y-%m-%d")
-esios_dataset <- esios_dataset %>% 
-  mutate_at(vars(energy_source, renewable_generation_perc_bin), funs(as.factor(.)))
 
 # Taula resum que representa les principals característiques de les diferents variables
 str(esios_dataset)
@@ -163,7 +161,10 @@ La presència de diverses estacions meteorològiques per província ha requerit 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Carreguem les dades del dataset AEMET preprocessat
 aemet_dataset <- read.csv("data/aemet_dataset_preprocessed.csv", sep = ",", header = TRUE, 
-                          stringsAsFactors = FALSE)
+                          stringsAsFactors = TRUE)
+
+# Transformem la columna date al format correcte
+aemet_dataset$date <- as.Date(aemet_dataset$date, format = "%Y-%m-%d")
 
 # Taula resum que representa les principals característiques de les diferents variables
 str(aemet_dataset)
@@ -233,44 +234,41 @@ insolation_bin_bar <- ggplot(aemet_dataset, aes(x = insolation_bin)) + geom_bar(
 grid.arrange(avg_temp_hist, precipitation_hist, avg_wind_hist, max_wind_hist, avg_pressure_hist, insolation_hist, avg_pressure_bin_bar, insolation_bin_bar, ncol = 4)
 ```
 
-# Afegir explicació del que es veu. Com és l'histograma? distribució normal, 
-# biax, etc.
-
-# avg_pressure_bin
-Es pot veure que la majoria de les observacions (35000 comptes) es corresponen 
-amb pressions atmosfèriques associades a la depressió. Tanmateix, això no estarà
-sempre associat amb precipitació o mal temps, ja què dependrà d'altres variables
-com *insolation* o *daily_precipitation*.
-
-# insolació
-
-Es pot veure com predominen els dies assolellats, ja que les hores d'insolació
-es troben en els intervals 5-10 hores o 10+ hores. Per tant, això indica que la
-pressió atmosfèrica, tot i ser un indicador d'inestabilitat meteorològica, no 
-sembla suficient per determinar la insolació o la precipitació.
-
-
+La variable *avg_daily_temp* presenta una distribució semblant a una gaussiana bastant ample. Així, la temperatura diària mitjana a Espanya en el període analitzat és de 15ºC. Fins i tot, es podria separar en dues distribucions, de mitjanes properes als 10 i 20 ºC, respectivament. Això, tindria el seu origen en províncies del nord on acostuma a fer més fred, mentre què en les del sud, fa més calor. La *daily_precipitation* té una distribució molt esbiaxada cap a la dreta ja que la majoria de valors són propers a 0 mm. Per tant, no hi ha hagut gaire precipitació en el període estudiat. Pel que va a les variables *avg_wind_speed* i *max_wind_speed*, tenen distribucions prou normals amb amb cert biaix cap a la dreta. Les mitjanes són de 2.5 i 10 km/h, aproximadament. Sorprèn que l'energia eòlica sigui la font renovable amb més representació, malgrat estem tractant amb valors promitjos que poden introduir cert biaix en l'anàlisi. L'*avg_pressure* presenta quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa, aproximadament. La classificació feta a *avg_pressure_bin* indicaria que la majoria de pressions atmosfèriques estan associades amb depressió, valors per sota de 1013 hPa. Tanmateix, això no estarà sempre associat amb precipitació o mal temps tot i ser més probable, ja què la pressió atmosfèrica només mesura el pes de l'aire en una ubicació. Finalment, la *insolation* mostra una distribució una mica uniforme, tot i què s'observa un increment d'observacions a partir de les 5 hores amb un màxim al voltant de 8h. La classificació feta a *insolation_bin* indica que predominen els dies assolellats, ja que les hores d'insolació es troben en els intervals 5-10 hores o 10+ hores.
 
 Representem la sèrie temporal de les mateixes variables numèriques:
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=2, fig.width=14}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=14}
 # Serie temporal de les variables avg_daily_temp, daily_precipitation, avg_wind_speed, max_wind_speed, insolation i avg_pressure
-total_price_plot <- ggplot(esios_dataset, aes(x = date, y = avg_total_price_eur_mwh)) + geom_line() + labs(title = "avg_total_price_eur_mwh", 
-        x = "Date", y = "Avg total price (€/MWh)") + theme(plot.title = element_text(hjust = 0.5)) +
-  theme_bw() + theme(text = element_text(size = 10))
+avg_temp_plot <- ggplot(aemet_dataset, aes(x = date, y = avg_daily_temp)) + geom_line(color = 'orange', alpha = 0.5) +
+                  geom_line(data = aggregate(avg_daily_temp ~ date, aemet_dataset, mean), aes(x = date, y = avg_daily_temp), color = 'blue', alpha = 0.7) +
+                  labs(title = "avg_daily_temp", x = "Date", y = "Temperature (ºC)") + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(text = element_text(size = 10))
 
-energy_total_plot <- ggplot(esios_dataset, aes(x = date, y = energy_total_mwh)) + geom_line() + labs(title = "energy_total_mwh",
-        x = "Date", y = "Energy total (MWh)") + theme(plot.title = element_text(hjust = 0.5)) +
-  theme_bw() + theme(text = element_text(size = 10))
+precipitation_plot <- ggplot(aemet_dataset, aes(x = date, y = daily_precipitation)) + geom_line(color = 'orange', alpha = 0.5) + 
+                      geom_line(data = aggregate(daily_precipitation ~ date, aemet_dataset, mean), aes(x = date, y = daily_precipitation), color = 'blue', alpha = 0.7) +
+                      labs(title = "daily_precipitation", x = "Date", y = "Precipitation (mm)") + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(text = element_text(size = 10))
 
-renewable_generation_perc_plot <- ggplot(esios_dataset, aes(x = date, y = renewable_generation_perc, color = energy_source)) + geom_line() + labs(title = "renewable_generation_perc",
-        x = "Date", y = "Renewable generation (%)") + theme(plot.title = element_text(hjust = 0.5)) +
-  theme_bw() + theme(text = element_text(size = 10))
+avg_wind_plot <- ggplot(aemet_dataset, aes(x = date, y = avg_wind_speed)) + geom_line(color = 'orange', alpha = 0.5) + 
+                  geom_line(data = aggregate(avg_wind_speed ~ date, aemet_dataset, mean), aes(x = date, y = avg_wind_speed), color = 'blue', alpha = 0.7) +
+                  labs(title = "avg_wind_speed", x = "Date", y = "Avg. wind speed (km/h)") + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(text = element_text(size = 10))
 
-grid.arrange(total_price_plot, energy_total_plot, renewable_generation_perc_plot, ncol = 3)
+max_wind_plot <- ggplot(aemet_dataset, aes(x = date, y = max_wind_speed)) + geom_line(color = 'orange', alpha = 0.5) + 
+                  geom_line(data = aggregate(max_wind_speed ~ date, aemet_dataset, mean), aes(x = date, y = max_wind_speed), color = 'blue', alpha = 0.7) +
+                  labs(title = "max_wind_speed", x = "Date", y = "Max. wind speed (km/h)") + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(text = element_text(size = 10))
+
+insolation_plot <- ggplot(aemet_dataset, aes(x = date, y = insolation)) + geom_line(color = 'orange', alpha = 0.5) + 
+                    geom_line(data = aggregate(insolation ~ date, aemet_dataset, mean), aes(x = date, y = insolation), color = 'blue', alpha = 0.7) +
+                    labs(title = "insolation", x = "Date", y = "Insolation (h)") + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(text = element_text(size = 10))
+
+avg_pressure_plot <- ggplot(aemet_dataset, aes(x = date, y = avg_pressure)) + geom_line(color = 'orange', alpha = 0.5) + 
+                      geom_line(data = aggregate(avg_pressure ~ date, aemet_dataset, mean), aes(x = date, y = avg_pressure), color = 'blue', alpha = 0.7) +
+                      labs(title = "avg_pressure", x = "Date", y = "Avg. pressure (hPa)") + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(text = element_text(size = 10))
+
+grid.arrange(avg_temp_plot, precipitation_plot, avg_wind_plot, max_wind_plot, insolation_plot, avg_pressure_plot, ncol = 3)
 ```
 
-avg_daily_temp, daily_precipitation, avg_wind_speed, max_wind_speed, insolation, avg_pressure
+
+
 
 
 ## 2.3 Unió dels dos datasets
