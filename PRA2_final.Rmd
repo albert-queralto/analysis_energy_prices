@@ -533,7 +533,7 @@ grid.arrange(qq_adt, qq_dp, qq_aws, qq_mws, qq_i, qq_avg_p, qq_avg_price, qq_et,
 
 El *QQ-plot* permet observar com de propera és la distribució de les dades a la normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà la distribució. Per tant, podem dir què *avg_daily_temp* i *energy_total_mwh* segueixen una distribució pràcticament normal tot i què les cues tenen bastantes observacions (veure seccions 2.1.10 i 2.2.3). La resta de variables no presenten distribucions normals; l'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW, mentre què *renewable_generation_perc* presenta una doble distribució, però aquesta té moltes més observacions en el rang de percentatges entre 0 i 35% (veure secció 2.1.10). La variable *insolation* té una distribució bastant uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables *daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation* (veure secció 2.2.3).
 
-# falta la variancia per les variables numèriques
+# falta la variancia per les variables numèriques tot i què per calcular-la s'han de comparar dos grups i aquí no ho farem, aplicarem una matriu de correlació
 
 
 
@@ -551,20 +551,32 @@ corrplot(corr_matrix_data, method = "number", type = "lower",
 ```
 \normalsize
 
-La matriu de correlació de les variables numèriques mostra una forta correlació lineal positiva entre les variables *max_wind_speed* i *avg_wind_speed*. Això és degut a què com més vent fa, major serà la velocitat màxima, a més, el càlcul de la velocitat promitja contindrà també els valors màxims. Per tant, en posteriors anàlisis es podrà descartar una de les dues. També s'observa una moderada dependència lineal positiva entre les variables *insolation* i *avg_daily_temp*. Això té sentit ja què els dies més càlids solen estar associats amb bon temps i aquests es troben normalment a l'estiu on la duració del dia és més llarga, augmentant les hores d'insolació. Tanmateix, la correlació no sembla suficient com per descartar cap de les dues variables en estudis posteriors. També s'observa una correlació negativa entre les variables *insolation* i *daily_precipitation*. Això és degut a què els dies plujosos, els núvols tapen el sol i, per tant, hi ha menys hores d'insolació. Les variables *max_wind_speed* i *daily_precipitation* tenen una correlació lleugerament positiva, ja què alguns dies plujosos sol fer vent, mentre què les variables *avg_pressure* i *avg_daily_temp* tenen una correlació lleugerament positiva, ja què els dies amb anticicló solen ser dies més càlids, ja què els núvols bloquejen part de la radiació solar quan fa mal temps. També s'observen altres correlacions lineals amb coeficients per sota de 0.2 entre les variables *avg_wind_speed* i *daily_precipitation*, *insolation
-
+La matriu de correlació de les variables numèriques mostra una forta correlació lineal positiva entre les variables *max_wind_speed* i *avg_wind_speed*. Això és degut a què com més vent fa, major serà la velocitat màxima, a més, el càlcul de la velocitat promitja contindrà també els valors màxims. Per tant, en posteriors anàlisis es podrà descartar una de les dues. També s'observa una moderada dependència lineal positiva entre les variables *insolation* i *avg_daily_temp*. Això té sentit ja què els dies més càlids solen estar associats amb bon temps i aquests es troben normalment a l'estiu on la duració del dia és més llarga, augmentant les hores d'insolació. D'altra banda, els dies plujosos solen tenir una menor temperatura perquè sol ploure més a la primavera o tardor on les temperatures no són tan elevades com a l'estiu (lleugera correlació positiva entre *avg_daily_temp* i *daily_precipitation*). També s'observa una correlació negativa entre les variables *insolation* i *daily_precipitation*. Això és degut a què els dies plujosos, els núvols tapen el sol i, per tant, hi ha menys hores d'insolació. A més, també sol fer més vent, ja què hi ha certa correlació positiva entre *insolation* i *max_wind_speed*. Les variables *max_wind_speed* (i *avg_wind_speed*) i *daily_precipitation* tenen una correlació lleugerament positiva, ja què alguns dies plujosos sol fer vent, mentre què les variables *avg_pressure* i *avg_daily_temp* tenen una correlació lleugerament positiva, ja què els dies amb anticicló solen ser dies més càlids, ja què els núvols bloquejen part de la radiació solar quan fa mal temps. També s'observa certa correlació positiva entre *avg_daily_temp* i *avg_total_price_eur_mwh* indicant què el preu es pot veure lleugerament afectat per la temperatura. Això podria ser degut al fet què els dies més càlids la demanda sol incrementar per l'ús de l'aire acondicionat i, per tant, el preu del MWh augmenta. D'altra banda, s'observa certa correlació negativa entre les variables *max_wind_speed* i *avg_wind_speed* indicant que els dies ventosos disminueix el preu de l'electricitat. Això pot estar degut a què l'energia eòlica és renovable i té un preu de producció més barat.
 
 ## 4.2.  Anàlisi de *renewable_generation_perc_bin* en funció de la meteorologia i *energy_source*
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
-Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el percentatge de produccio d'energia renovable. Per això, crearem un subset de les dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable *renewable_generation_perc_bin* conté 3 grups (veure gràfic de barres a la secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a l'energia hidroelèctrica. Per últim, descartarem la variable *avg_wind_speed* ja què té una forta correlació amb la variable *max_wind_speed* (veure secció 4.1).
+Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el percentatge de produccio d'energia renovable. Per això, crearem un subset de les dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable *renewable_generation_perc_bin* conté 4 grups (veure gràfic de barres a la secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a l'energia hidroelèctrica i el grup *76-100* es correspon amb les files que tenen *energy_source=total*, ja què mai hi ha una font d'energia renovable que arribi a aquests percentatges per si sola. Per últim, descartarem la variable *avg_wind_speed* en el model ja què té una forta correlació amb la variable *max_wind_speed* (veure secció 4.1).
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Subset de les dades per energy_source != total
-subset_energy_source_type <- standard_num_vars %>% 
-  filter(energy_source != "total", renewable_generation_perc_bin != "Below 0")
+# Filtrem les dades per energy_source != total i 
+#renewable_generation_perc_bin != Below 0 i 75-100
+subset_energy_source_type <- standard_num_vars
+subset_energy_source_type$energy_source <- factor(
+  subset_energy_source_type$energy_source, 
+              levels = c("hydroelectric", "wind", "solar", "nuclear", 
+                         "thermorenewable"))
+subset_energy_source_type$renewable_generation_perc_bin <- factor(
+  subset_energy_source_type$renewable_generation_perc_bin, 
+  levels = c("0-35", "36-75"))
+
+# Eliminem nuls ja que l'eliminació dels factors només els transforma a NA, 
+# però les observacions segueixen presents
+subset_energy_source_type <- subset_energy_source_type %>% drop_na()
+
+summary(subset_energy_source_type)
 ```
 \normalsize
 
@@ -572,23 +584,29 @@ L'anàlisi que aplicarem serà una regressió logística multivariable on *renew
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-La normalitat de les variables numèriques s'ha comprovat en l'apartat 4.1. En aquest cas, ens centrarem en la variable *energy_source*, es pot veure que té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt.
+La normalitat de les variables numèriques s'ha comprovat en l'apartat 4.1. Per tant, no la tornarem a comprovar. En aquest cas, ens centrarem en les variables categòriques: *energy_source* té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt, mentre què *renewable_generation_perc_bin* està desbalancejada amb la majoria d'observacions (~96%) en el rang *0-35*. Per això, aplicarem la tècnica de *downsampling*, seleccionant un subset de les dades per tal de contrarestar aquest desbalanç:
 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Apliquem el downsampling al dataset
+downsampled_data <- downSample(x = subset_energy_source_type[,
+    !colnames(subset_energy_source_type) %in% "renewable_generation_perc_bin"],
+  y = subset_energy_source_type$renewable_generation_perc_bin,
+  yname = "renewable_generation_perc_bin")
 
+# Mostrem resultats del downsampling per la variable renewable_generation_perc_bin
+table(downsampled_data$renewable_generation_perc_bin)
+```
 
-
-
-
-Comprovem l'homogeneitat de les variàncies respecte la variable *renewable_generation_perc_bin*:
+Comprovem l'homogeneitat de les variàncies de les variables numèriques respecte la variable *renewable_generation_perc_bin*:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem la homogeneïtat de les variàncies
-leveneTest(subset_energy_source_type$avg_daily_temp ~ subset_energy_source_type$renewable_generation_perc_bin)
-leveneTest(subset_energy_source_type$daily_precipitation ~ subset_energy_source_type$renewable_generation_perc_bin)
-leveneTest(subset_energy_source_type$max_wind_speed ~ subset_energy_source_type$renewable_generation_perc_bin)
-leveneTest(subset_energy_source_type$insolation ~ subset_energy_source_type$renewable_generation_perc_bin)
-leveneTest(subset_energy_source_type$avg_pressure ~ subset_energy_source_type$renewable_generation_perc_bin)
+leveneTest(downsampled_data$avg_daily_temp ~ downsampled_data$renewable_generation_perc_bin)
+leveneTest(downsampled_data$daily_precipitation ~ downsampled_data$renewable_generation_perc_bin)
+leveneTest(downsampled_data$max_wind_speed ~ downsampled_data$renewable_generation_perc_bin)
+leveneTest(downsampled_data$insolation ~ downsampled_data$renewable_generation_perc_bin)
+leveneTest(downsampled_data$avg_pressure ~ downsampled_data$renewable_generation_perc_bin)
 ```
 \normalsize
 
@@ -601,41 +619,44 @@ El test de Levene rebutja la hipòtesi nul·la per les variables numèriques que
 # Calculem la regressió logística entre les variables
 logistic_renew_perc <- glm(renewable_generation_perc_bin ~ avg_daily_temp + 
                              daily_precipitation +  max_wind_speed + 
-                             insolation + avg_pressure + energy_source, 
-                           data = energy_source_type_standard, 
+                             insolation + avg_pressure + energy_source,
+                           data = downsampled_data, 
                            family = binomial(link = logit))
 
 summary(logistic_renew_perc)
 ```
 \normalsize
 
-El model obtingut mostra que les variables amb més pes són, en primer lloc, l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que aquestes variables tenen valors p propers a 1, fet que indicaria que la relació entre aquestes variables i *renewable_generation_perc_bin* no és significativa. Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*, l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients tenen valors p inferiors a 0.05, per tant, la relació és significativa. Finalment, les variables *daily_precipitation* i *avg_wind_speed* tenen poc pes, independentment del valor p associat. 
+El model obtingut mostra que les variables amb més pes són, en primer lloc, l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que aquestes variables tenen valors p propers a 1, fet que indicaria que la relació entre aquestes variables i *renewable_generation_perc_bin* no és significativa. Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*, l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients tenen valors p inferiors a 0.05, per tant, la relació és significativa. Finalment, la variable *daily_precipitation* té poc pes en la predicció de *renewable_generation_perc_bin*. 
 
-# Què fer amb aquest test? La corva ROC surt molt millor!
-
-Si analitzem la bondat de l'ajust fent servir el *Hosmer-Lemeshow test*:
-
-\normalsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Test de Hosmer-Lemeshow
-hoslem.test(energy_source_type_standard$renewable_generation_perc_bin, fitted(logistic_renew_perc))
-```
-\scriptsize
-
-Veiem que el valor p del test és molt menor a 0.05 i, per tant, es pot rebutjar la hipòtesi nul·la. Això, implica que les prediccions del model no s’ajusten prou bé amb els valors observats. [8]
-
-Finalment, calculem la corba ROC i l'AUC:
+Calculem la matriu de confusió i la corba ROC per avaluar els resultats del model:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Generem predictions per poder calcular la corva ROC
-prediccions_log <- predict(logistic_renew_perc, data = energy_source_type_standard, type = 'response')
+# Generem predictions per poder calcular la matriu de confusió
+predictions_log <- predict(logistic_renew_perc, data = downsampled_data, 
+                           type = 'response')
+
+# Establim probabilitat per assignar els dos grups i assignem els noms originals
+# a les prediccions
+predictions_binary <- as.factor(predictions_log>0.5)
+predicition_names <- levels(
+  downsampled_data$renewable_generation_perc_bin)[predictions_binary]
+
+# Calculem la matriu de confusió
+confusionMatrix(as.factor(predicition_names), 
+                downsampled_data$renewable_generation_perc_bin)
 
 # Càlcul de la corba ROC i de la AUC
-r_log = roc(subset_energy_source_type$renewable_generation_perc_bin, prediccions_log, data = energy_source_type_standard, auc = TRUE, plot = TRUE)
+r_log = roc(downsampled_data$renewable_generation_perc_bin, 
+            as.numeric(prediccions_log),
+            data = downsampled_data, auc = TRUE, plot = TRUE)
 r_log
 ```
 \normalsize
+
+
+
 
 Els resultats mostren com l'àrea sota la corva té un valor de 0.97, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
 
