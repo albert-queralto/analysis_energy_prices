@@ -23,8 +23,9 @@ Primer de tot, carregarem algunes llibreries que podríem necessitar per crear e
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "caret", "corrplot", 
               "Hmisc", "rpart", "rpart.plot", "useful", "ROCR", "precrec", "knitr", 
-              "lubridate", "stringr", "psych", "pROC", "zoo", "reshape2", "gridExtra", 
-              "ggpubr", "rstatix", "lattice", "ResourceSelection", "car")
+              "lubridate", "stringr", "psych", "pROC", "zoo", "reshape2", 
+              "gridExtra", "ggpubr", "rstatix", "lattice", "ResourceSelection", 
+              "car", "quantreg", "rsq")
 
 # install.packages(packages) # Comentar si no cal instal·lar les llibreries 
 lapply(packages, require, character.only = TRUE)
@@ -655,65 +656,28 @@ r_log
 ```
 \normalsize
 
+La matriu de confusió mostra com el model de regressió logística és capaç de discriminar correctament els valors de classe, ja què té una *accuracy* del 91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la proporció de de valors positius (*36-75* en aquest cas) classificats correctament, mentre què la *specificity* ens indica la proporció de valors negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem que el model classifica millor la classe *0-35* tot i haver utilitzat un *downsampling* de la classe majoritària. L'àrea sota la corva té un valor de 0.92, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
 
+## 4.3. ????
 
-
-Els resultats mostren com l'àrea sota la corva té un valor de 0.97, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
-
-
-
-
-
-
-
-
-### 4.3. Anàlisi de ....
+No té sentit aplicar regressions lineals perquè les variables no són normals
 
 **Selecció dels grups de dades i tipus d'anàlisi**
-
-Analitzarem la relació que té globalment la producció d'energia renovable (*renewable_generation_perc*) i la meteorologia en el preu de l'electricitat (*avg_total_price_eur_mwh*). Per tant, creem un subset de les dades, filtrant per *energy_source=total*.
-
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Subset de les dades per energy_source = total
-subset_energy_source_total <- final_dataset %>% filter(energy_source == "total")
-```
-\normalsize
-
-L'anàlisi que aplicarem serà una regressió lineal multivariable.
-
-Representar QQ-plots in a grid
-
 
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-Representar QQ-plots in a grid using qqnorm and qqline
 
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-
-```
-\normalsize
-
-Per comprovar la normalitat de les dades, utilitzarem el test de Shapiro-Wilk.
-Aquest test ens permet comprovar si les dades provenen d'una distribució normal
-o no. Per tant, si el p-value és menor que 0.05, les dades no provenen d'una
-distribució normal.
-
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem la normalitat de les dades
-# shapiro.test(subset_energy_source_total$renewable_generation_perc)
-# shapiro.test(subset_energy_source_total$avg_total_price_eur_mwh)
-```
-\normalsize
 
 **Proves estadístiques**
+
 
 
 ### 4.4. Anàlisi de.....
 
+Jo faria algun test de contrast d'hipòtesis per exemple de la variable *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
+
+
 **Selecció dels grups de dades i tipus d'anàlisi**
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
@@ -721,24 +685,8 @@ distribució normal.
 **Proves estadístiques**
 
 
-## 4.3. Proves estadístiques per comparar grups de dades (Almenys 3 mètodes d'anàlisi diferents)
 
 
-
-Calculem la regressió entre les variables *avg_daily_temp*.
-*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation*,
-*avg_pressure*, *energy_source* i *renewable_generation_perc*.
-
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la regressió logística entre les variables
-regression <- glm(formula = renewable_generation_perc_bin ~ avg_daily_temp + daily_precipitation + 
-                  avg_wind_speed + max_wind_speed + insolation + avg_pressure + 
-                  energy_source, data = final_dataset, family = binomial(link = logit))
-
-summary(regression)
-```
-\normalsize
 
 # Contribucions
 
@@ -781,4 +729,4 @@ https://github.com/albert-queralto/scraping-energy-prices-spain
 the renewable energy production in Spain" (Zenodo, 2022).
 https://doi.org/10.5281/zenodo.7335618
 
-[8] Montserrat Guillén Estany i María Teresa Alonso Alonso, "Models de regressió logística", UOC (2020). 
+[8] Montserrat Guillén Estany i María Teresa Alonso Alonso, "Models de regressió logística", UOC (2020).
