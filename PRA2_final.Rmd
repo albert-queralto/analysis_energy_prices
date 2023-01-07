@@ -17,7 +17,8 @@ geometry: "left=1.5cm, right=1.5cm, top=2cm, bottom=1.5cm"
 
 # LLibreries
 
-Primer de tot, carregarem algunes llibreries que podríem necessitar per crear els diferents models, analitzar-los i generar gràfics.
+Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
+els diferents models, analitzar-los i generar gràfics.
 
 ```{r libraries, message=FALSE, warning=FALSE, include=FALSE, results='hide'}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
@@ -37,32 +38,77 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1. Descripció del dataset
 
-En els últims mesos, l'evolució del preu de l'energia elèctrica ha augmentat considerablement degut a la pujada dels preus dels combustibles fòssils, a la guerra d'Ucraïna i a l'especulació dels mercats. [1, 2] Això ha provocat una situació d'inflació insostenible per a moltes famílies i comerços, i ha posat de nou les energies renovables en el centre de la política energètica amb l'objectiu de reduir la dependència dels combustibles fòssils i redreçar la situació. [1-3] 
-El preu de l'energia d'origen renovable ha disminuït considerablement en els últims anys si es compara amb altres fonts d'energia no renovables, com el gas natural o el carbó. [4] A més, hi ha una necessitat creixent de reduir la producció d'energia a partir de combustibles fòssils per a reduir les emissions de gasos d'efecte hivernacle a l'atmosfera i frenar el canvi climàtic. [5]
+En els últims mesos, l'evolució del preu de l'energia elèctrica ha augmentat
+considerablement degut a la pujada dels preus dels combustibles fòssils, a la
+guerra d'Ucraïna i a l'especulació dels mercats. [1, 2] Això ha provocat una
+situació d'inflació insostenible per a moltes famílies i comerços, i ha posat de
+nou les energies renovables en el centre de la política energètica amb
+l'objectiu de reduir la dependència dels combustibles fòssils i redreçar la
+situació. [1-3] El preu de l'energia d'origen renovable ha disminuït
+considerablement en els últims anys si es compara amb altres fonts d'energia no
+renovables, com el gas natural o el carbó. [4] A més, hi ha una necessitat
+creixent de reduir la producció d'energia a partir de combustibles fòssils per a
+reduir les emissions de gasos d'efecte hivernacle a l'atmosfera i frenar el
+canvi climàtic. [5]
 
-Per aquest motiu i amb l'objectiu de promoure la producció i utilització de l'energia renovable, es vol analitzar l'evolució del preu de l'energia elèctrica a Espanya i la producció general d'energies renovables en el període de temps comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022 en la mateixa zona geogràfica. 
+Per aquest motiu i amb l'objectiu de promoure la producció i utilització de
+l'energia renovable, es vol analitzar l'evolució del preu de l'energia elèctrica
+a Espanya i la producció general d'energies renovables en el període de temps
+comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022 en la mateixa
+zona geogràfica. 
 
-Aquesta informació es va recopilar en la primera pràctica mitjançant la tècnica de webscraping a partir de les dades obtingudes de la web https://www.esios.ree.es/es/ (*dataset ESIOS*), per a la qual es va demanar permís explícit per a tractar i publicar el resultat obtingut amb aquestes dades. El resultat de la primera pràctica es pot trobar publicat a: https://github.com/albert-queralto/scraping-energy-prices-spain [6-7] 
+Aquesta informació es va recopilar en la primera pràctica mitjançant la tècnica
+de webscraping a partir de les dades obtingudes de la web
+https://www.esios.ree.es/es/ (*dataset ESIOS*), per a la qual es va demanar
+permís explícit per a tractar i publicar el resultat obtingut amb aquestes
+dades. El resultat de la primera pràctica es pot trobar publicat a:
+https://github.com/albert-queralto/scraping-energy-prices-spain [6-7] 
 
-D'altra banda, cal mencionar també com la meteorologia influeix significativament en la producció de les energies renovables. Per exemple, es preveu que els dies assolellats tinguin una elevada producció d'origen fotovoltaïc, així com l'energia eòlica serà representativa en els dies ventosos o la quantitat de precipitació contribuirà a omplir els embassaments que permeten generar energia hidroelèctrica. 
+D'altra banda, cal mencionar també com la meteorologia influeix
+significativament en la producció de les energies renovables. Per exemple, es
+preveu que els dies assolellats tinguin una elevada producció d'origen
+fotovoltaïc, així com l'energia eòlica serà representativa en els dies ventosos
+o la quantitat de precipitació contribuirà a omplir els embassaments que
+permeten generar energia hidroelèctrica. 
 
-Així doncs, per completar l'anàlisi, també s'ha decidit utilitzar dades climàtiques diàries obtingudes de la web https://opendata.aemet.es/ (*dataset AEMET*). Entre altres, hi ha dades de temperatures, precipitació, vent, insolació, etc., 
-en el mateix rang de dates que el dataset d'ESIOS. La combinació d'ambdós datasets ens permetrà assolir els objectius següents marcats per a aquesta pràctica:
+Així doncs, per completar l'anàlisi, també s'ha decidit utilitzar dades
+climàtiques diàries obtingudes de la web https://opendata.aemet.es/ (*dataset
+AEMET*). Entre altres, hi ha dades de temperatures, precipitació, vent,
+insolació, etc., en el mateix rang de dates que el dataset d'ESIOS. La
+combinació d'ambdós datasets ens permetrà assolir els objectius següents marcats
+per a aquesta pràctica:
 
-- Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període de temps mencionat.
-- Entendre la relació entre el preu de l'energia elèctrica, la producció d'energies renovables i la influència de la meteorologia.
-- Discernir quina font d'energia renovable té un impacte més rellevant en el preu de l'energia.
-- Predir el preu de l'energia elèctrica a Espanya en funció de la producció d'energia renovable.
+- Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període
+  de temps mencionat.
+- Entendre la relació entre el preu de l'energia elèctrica, la producció
+  d'energies renovables i la influència de la meteorologia.
+- Discernir quina font d'energia renovable té un impacte més rellevant en el
+  preu de l'energia.
+- Predir el preu de l'energia elèctrica a Espanya en funció de la producció
+  d'energia renovable.
 
 # 2. Integració i selecció
 
-Degut a l'extensió del preprocessat, aquest s'ha dut a terme en un fitxer a part (*PRA2_preprocessing.Rmd*). En aquest document, només es mostra la integració i selecció de les dades.
+Degut a l'extensió del preprocessat, aquest s'ha dut a terme en un fitxer a part
+(*PRA2_preprocessing.Rmd*). En aquest document, només es mostra la integració i
+selecció de les dades.
 
 ## 2.1. Càrrega i selecció del dataset ESIOS
 
 ### 2.1.1. Càrrega de les dades i anàlisi a alt nivell
 
-Carreguem les dades del *dataset ESIOS* creat a la pràctica 1 i preprocessat (veure *PRA2_preprocessing.Rmd* i pdf associat). Aquestes dades són les obtingudes a partir de la web https://www.esios.ree.es/es/ [6-7] i contenen la informació de l'evolució del preu de l'energia elèctrica a Espanya i la producció d'energies renovables en el període de temps comprès entre l'1 de Novembre del 2020 al 31 d'Octubre del 2022. Aquest dataset tenia una granularitat per hores. Tanmateix, el *dataset AEMET* contené dades per dia, per això, s'han calculat els promitjos diaris de les dades del *dataset ESIOS*. Per fer aquest càlcul, s'han hagut de tractar també els valors nuls, ja què si no, el promig diari no es podia calcular correctament. La imputació de valors nuls, tot i què aquests eren menys d'un 0.1% de les dades, s'ha fet interpolant les dades agrupades per la variable *energy_source*.
+Carreguem les dades del *dataset ESIOS* creat a la pràctica 1 i preprocessat
+(veure *PRA2_preprocessing.Rmd* i pdf associat). Aquestes dades són les
+obtingudes a partir de la web https://www.esios.ree.es/es/ [6-7] i contenen la
+informació de l'evolució del preu de l'energia elèctrica a Espanya i la
+producció d'energies renovables en el període de temps comprès entre l'1 de
+Novembre del 2020 al 31 d'Octubre del 2022. Aquest dataset tenia una
+granularitat per hores. Tanmateix, el *dataset AEMET* contené dades per dia, per
+això, s'han calculat els promitjos diaris de les dades del *dataset ESIOS*. Per
+fer aquest càlcul, s'han hagut de tractar també els valors nuls, ja què si no,
+el promig diari no es podia calcular correctament. La imputació de valors nuls,
+tot i què aquests eren menys d'un 0.1% de les dades, s'ha fet interpolant les
+dades agrupades per la variable *energy_source*.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -78,7 +124,9 @@ str(esios_dataset)
 ```
 \normalsize
 
-El dataset conté dades estructurades en 13 columnes i 4380 files. Les columnes *date*, *energy_source* i *renewable_generation_perc_bin* eren de tipus *character* i s'han transformat al tipus correcte (*Date* i *factor*).
+El dataset conté dades estructurades en 13 columnes i 4380 files. Les columnes
+*date*, *energy_source* i *renewable_generation_perc_bin* eren de tipus
+*character* i s'han transformat al tipus correcte (*Date* i *factor*).
 
 ### 2.1.2. Filtrat de variables numèriques
 
@@ -101,7 +149,16 @@ corrplot(corr_matrix_esios, method = "circle", type = "lower",
 ```
 \normalsize
 
-Les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i *avg_total_price_eur_mwh* tenen una elevada correlació, per això només conservarem la darrera. Pel que fa a les variables *free_market_share_perc*, *ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*, s'ha decidit eliminar-les ja que s'ha considerat que no aporten informació rellevant per a l'estudi proposat. Les variables *renewable_generation_mw* i *renewable_generation_perc* també estan fortament correlacionades i només conservarem la segona. Així doncs, les columnes que es volen conservar són: *date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*, *renewable_generation_perc* i *renewable_generation_perc_bin*.
+Les variables *avg_price_free_market_eur_mwh*, *avg_price_ref_market_eur_mwh* i
+*avg_total_price_eur_mwh* tenen una elevada correlació, per això només
+conservarem la darrera. Pel que fa a les variables *free_market_share_perc*,
+*ref_market_share_perc*, *energy_free_market_mwh* i *energy_ref_market_mwh*,
+s'ha decidit eliminar-les ja que s'ha considerat que no aporten informació
+rellevant per a l'estudi proposat. Les variables *renewable_generation_mw* i
+*renewable_generation_perc* també estan fortament correlacionades i només
+conservarem la segona. Així doncs, les columnes que es volen conservar són:
+*date*, *avg_total_price_eur_mwh*, *energy_total_mwh*, *energy_source*,
+*renewable_generation_perc* i *renewable_generation_perc_bin*.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -117,7 +174,8 @@ head(esios_dataset)
 
 ### 2.1.10. Representem les variables resultants
 
-Representem les variables numèriques del dataset resultant en diferents histogrames i les categòriques en gràfics de barres:
+Representem les variables numèriques del dataset resultant en diferents
+histogrames i les categòriques en gràfics de barres:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=2.5, fig.width=14, fig.align='center'}
@@ -153,7 +211,22 @@ grid.arrange(total_price_hist, energy_total_hist, renew_perc_hist, renew_perc_bi
 ```
 \normalsize
 
-Observem que la variable *renewable_generation_perc* té freqüència més alta al voltant del 5% (~800 MW), mentre què aquesta freqüència disminueix a mesura que augmenta la potència renovable, essent gairebé nul·la en valors del 100% (~30000 MW). Això indicaria que la producció renovable és normalment baixa, entre el 0 i el 25%. L'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW. Això indicaria la presència de períodes amb dos rangs de preus molt diferents. La variable *energy_total_mwh* presenta una distribució lleugerament esbiaxada cap a l'esquerra amb un màxim de freqüència entorn els 28000 MWh. Pel que fa al gràfic de barres d'*renewable_generation_perc_bin*, la majoria d'observacions tenen un percentatge de generació entre el 0% i el 35% amb una representació bastant semblant per les diferents fonts d'energia. Per tant, es pot concloure que la generació renovable es troba normalment per sota del 35%. Pel que fa a l'energia eòlica, s'observen també algunes observacions en el rang del 36% al 75%, essent la font d'energia que més contribueix a la producció renovable. D'altra banda, l'energia hidroelèctrica consumeix energia en alguns casos.
+Observem que la variable *renewable_generation_perc* té freqüència més alta al
+voltant del 5% (~800 MW), mentre què aquesta freqüència disminueix a mesura que
+augmenta la potència renovable, essent gairebé nul·la en valors del 100% (~30000
+MW). Això indicaria que la producció renovable és normalment baixa, entre el 0 i
+el 25%. L'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb
+un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW. Això
+indicaria la presència de períodes amb dos rangs de preus molt diferents. La
+variable *energy_total_mwh* presenta una distribució lleugerament esbiaxada cap
+a l'esquerra amb un màxim de freqüència entorn els 28000 MWh. Pel que fa al
+gràfic de barres d'*renewable_generation_perc_bin*, la majoria d'observacions
+tenen un percentatge de generació entre el 0% i el 35% amb una representació
+bastant semblant per les diferents fonts d'energia. Per tant, es pot concloure
+que la generació renovable es troba normalment per sota del 35%. Pel que fa a
+l'energia eòlica, s'observen també algunes observacions en el rang del 36% al
+75%, essent la font d'energia que més contribueix a la producció renovable.
+D'altra banda, l'energia hidroelèctrica consumeix energia en alguns casos.
 
 Representem la sèrie temporal de les mateixes variables numèriques:
 
@@ -185,15 +258,46 @@ grid.arrange(total_price_plot, energy_total_plot, renewable_generation_perc_plot
 ```
 \normalsize
 
-La presència de les dues distribucions per *avg_total_price_eur_mwh* es veu clarament ja que els preus eren més propers als 100 €/MWh per l'any 2021, mentre què aquests van pujar entorn els 200 €/MWh al 2022. L'evolució de *energy_total_mwh* mostra que la producció a Espanya es situa entre els 22000 i els 32000 MW, aproximadament. Pel que fa a les energies lliures de CO2, l'energia eòlica i la nuclear predominen en la producció. Malgtrat això, la solar també a vist un agument en els darrers mesos del 2022. La disminució de la producció hidroelèctrica pot estar ocasionada per la sequera extrema que estem vivint actualment, mentre què la producció termorenovable no té una representació gaire significativa.
+La presència de les dues distribucions per *avg_total_price_eur_mwh* es veu
+clarament ja que els preus eren més propers als 100 €/MWh per l'any 2021, mentre
+què aquests van pujar entorn els 200 €/MWh al 2022. L'evolució de
+*energy_total_mwh* mostra que la producció a Espanya es situa entre els 22000 i
+els 32000 MW, aproximadament. Pel que fa a les energies lliures de CO2,
+l'energia eòlica i la nuclear predominen en la producció. Malgtrat això, la
+solar també a vist un agument en els darrers mesos del 2022. La disminució de la
+producció hidroelèctrica pot estar ocasionada per la sequera extrema que estem
+vivint actualment, mentre què la producció termorenovable no té una
+representació gaire significativa.
 
 ## 2.2. Càrrega i selecció del dataset AEMET
 
 ### 2.2.1. Càrrega de les dades i anàlisi a alt nivell
 
-Carreguem les dades del *dataset AEMET* preprocessat (veure *PRA2_preprocessing.Rmd* i pdf associat). Aquestes dades s'han obtingut de la web https://opendata.aemet.es/ utilitzant l'API proporcionada. La informació continguda al dataset va des de l'1 d'Octubre del 2020 al 30 de Novembre del 2022. Aquest estava format per la data d'adquisició dels registres, el número identificador de l'estació meteorològica, el seu nom, la provincia, l'altitud sobre el nivell del mar (en metres), la temperatura mitjana diària (ºC), la precipitació diària (en mm), la temperatura mínima (ºC), l'hora i minuts d'adquisició de la temperatura mínima, la temperatura màxima (ºC), l'hora i minuts d'adquisició de la temperatura màxima, la direcció de la ratxa de vent màxima, la velocitat mitjana del vent (m/s), l'hora de la ratxa màxima, l'insolació (en hores), la pressió màxima (hPa), l'hora de la pressió màxima, la pressió mínima (hPa), l'hora de la pressió mínima.
+Carreguem les dades del *dataset AEMET* preprocessat (veure
+*PRA2_preprocessing.Rmd* i pdf associat). Aquestes dades s'han obtingut de la
+web https://opendata.aemet.es/ utilitzant l'API proporcionada. La informació
+continguda al dataset va des de l'1 d'Octubre del 2020 al 30 de Novembre del
+2022. Aquest estava format per la data d'adquisició dels registres, el número
+identificador de l'estació meteorològica, el seu nom, la provincia, l'altitud
+sobre el nivell del mar (en metres), la temperatura mitjana diària (ºC), la
+precipitació diària (en mm), la temperatura mínima (ºC), l'hora i minuts
+d'adquisició de la temperatura mínima, la temperatura màxima (ºC), l'hora i
+minuts d'adquisició de la temperatura màxima, la direcció de la ratxa de vent
+màxima, la velocitat mitjana del vent (m/s), l'hora de la ratxa màxima,
+l'insolació (en hores), la pressió màxima (hPa), l'hora de la pressió màxima, la
+pressió mínima (hPa), l'hora de la pressió mínima.
 
-La presència de diverses estacions meteorològiques per província ha requerit el càlcul dels promitjos diares per província per tal de simplificar les dades. Per fer aquest càlcul, s'han hagut de tractar també els valors nuls durant el preprocessat, ja què si no, el promig diari no es podia calcular correctament. La imputació de valors nuls s'ha fet interpolant les dades agrupades per la variable *province*. A més, també s'ha decidit eliminar les columnes *climate_indicator*, *station_name*, *hour_min_temp*, *hour_max_temp*, *hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure* durant el preprocessat ja que la informació aportada no era rellevant pel nostre anàlisi. També, s'ha creat la variable *avg_pressure* a partir de les variables *max_pressure* i *min_pressure*.
+La presència de diverses estacions meteorològiques per província ha requerit el
+càlcul dels promitjos diares per província per tal de simplificar les dades. Per
+fer aquest càlcul, s'han hagut de tractar també els valors nuls durant el
+preprocessat, ja què si no, el promig diari no es podia calcular correctament.
+La imputació de valors nuls s'ha fet interpolant les dades agrupades per la
+variable *province*. A més, també s'ha decidit eliminar les columnes
+*climate_indicator*, *station_name*, *hour_min_temp*, *hour_max_temp*,
+*hour_max_wind_speed*, *hour_max_pressure* i *hour_min_pressure* durant el
+preprocessat ja que la informació aportada no era rellevant pel nostre anàlisi.
+També, s'ha creat la variable *avg_pressure* a partir de les variables
+*max_pressure* i *min_pressure*.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -209,11 +313,14 @@ str(aemet_dataset)
 ```
 \normalsize
 
-El dataset conté 16 columnes i 37960 files. Les columnes *date*, *province*, *avg_pressure_bin* i *insolation_bin* eren de tipus *character* i s'han transformat al tipus correcte (*Date* i *factor*).
+El dataset conté 16 columnes i 37960 files. Les columnes *date*, *province*,
+*avg_pressure_bin* i *insolation_bin* eren de tipus *character* i s'han
+transformat al tipus correcte (*Date* i *factor*).
 
 ### 2.2.2. Filtrat de variables numèriques
 
-Es calcula la matriu de correlació entre les variables numèriques per veure aquelles que estan altament correlacionades i conservar-ne només una:
+Es calcula la matriu de correlació entre les variables numèriques per veure
+aquelles que estan altament correlacionades i conservar-ne només una:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=3, fig.width=8, fig.align='center'}
@@ -230,7 +337,15 @@ corrplot(corr_matrix_aemet, method = "circle", type = "lower", tl.col = "black",
 ```
 \normalsize
 
-Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp* estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure*, *min_pressure* i *avg_pressure*, aquestes també tenen una forta correlació. Per tant, mantindrem només *avg_pressure*. Finalment, també eliminarem la direcció del vent, ja què hem considerat que no és útil per la nostre anàlisis. Així doncs, les columnes que es volen conservar són: *date*, *province*, *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure*:
+Els resultats mostren com les variables *min_daily_temp* i *max_daily_temp*
+estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem
+aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure*,
+*min_pressure* i *avg_pressure*, aquestes també tenen una forta correlació. Per
+tant, mantindrem només *avg_pressure*. Finalment, també eliminarem la direcció
+del vent, ja què hem considerat que no és útil per la nostre anàlisis. Així
+doncs, les columnes que es volen conservar són: *date*, *province*,
+*avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*,
+*insolation* i *avg_pressure*:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -244,7 +359,8 @@ aemet_dataset <- aemet_dataset %>% select(date, province, avg_daily_temp,
 
 ### 2.2.3. Representem les variables resultants
 
-Representem les variables numèriques del dataset resultant en diferents histogrames i les categòriques en gràfics de barres:
+Representem les variables numèriques del dataset resultant en diferents
+histogrames i les categòriques en gràfics de barres:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=14, fig.align='center'}
@@ -302,7 +418,29 @@ grid.arrange(avg_temp_hist, precipitation_hist, avg_wind_hist, max_wind_hist,
 ```
 \normalsize
 
-La variable *avg_daily_temp* presenta una distribució semblant a una gaussiana bastant ample. Així, la temperatura diària mitjana a Espanya en el període analitzat és de 15ºC. Fins i tot, es podria separar en dues distribucions, de mitjanes properes als 10 i 20 ºC, respectivament. Això, tindria el seu origen en províncies del nord on acostuma a fer més fred, mentre què en les del sud, fa més calor. La *daily_precipitation* té una distribució molt esbiaxada cap a la dreta ja que la majoria de valors són propers a 0 mm. Per tant, no hi ha hagut gaire precipitació en el període estudiat. Pel que va a les variables *avg_wind_speed* i *max_wind_speed*, tenen distribucions prou normals amb amb cert biaix cap a la dreta. Les mitjanes són de 2.5 i 10 km/h, aproximadament. Sorprèn que l'energia eòlica sigui la font renovable amb més representació, malgrat estem tractant amb valors promitjos que poden introduir cert biaix en l'anàlisi. L'*avg_pressure* presenta quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa, aproximadament. La classificació feta a *avg_pressure_bin* indicaria que la majoria de pressions atmosfèriques estan associades amb depressió, valors per sota de 1013 hPa. Tanmateix, això no estarà sempre associat amb precipitació o mal temps tot i ser més probable, ja què la pressió atmosfèrica només mesura el pes de l'aire en una ubicació. Finalment, la *insolation* mostra una distribució una mica uniforme, tot i què s'observa un increment d'observacions a partir de les 5 hores amb un màxim al voltant de 8h. La classificació feta a *insolation_bin* indica que predominen els dies assolellats, ja que les hores d'insolació es troben en els intervals 5-10 hores o 10+ hores.
+La variable *avg_daily_temp* presenta una distribució semblant a una gaussiana
+bastant ample. Així, la temperatura diària mitjana a Espanya en el període
+analitzat és de 15ºC. Fins i tot, es podria separar en dues distribucions, de
+mitjanes properes als 10 i 20 ºC, respectivament. Això, tindria el seu origen en
+províncies del nord on acostuma a fer més fred, mentre què en les del sud, fa
+més calor. La *daily_precipitation* té una distribució molt esbiaxada cap a la
+dreta ja que la majoria de valors són propers a 0 mm. Per tant, no hi ha hagut
+gaire precipitació en el període estudiat. Pel que va a les variables
+*avg_wind_speed* i *max_wind_speed*, tenen distribucions prou normals amb amb
+cert biaix cap a la dreta. Les mitjanes són de 2.5 i 10 km/h, aproximadament.
+Sorprèn que l'energia eòlica sigui la font renovable amb més representació,
+malgrat estem tractant amb valors promitjos que poden introduir cert biaix en
+l'anàlisi. L'*avg_pressure* presenta quatre distribucions amb valors promitjos
+al voltant de 870, 920, 970 i 1000 hPa, aproximadament. La classificació feta a
+*avg_pressure_bin* indicaria que la majoria de pressions atmosfèriques estan
+associades amb depressió, valors per sota de 1013 hPa. Tanmateix, això no estarà
+sempre associat amb precipitació o mal temps tot i ser més probable, ja què la
+pressió atmosfèrica només mesura el pes de l'aire en una ubicació. Finalment, la
+*insolation* mostra una distribució una mica uniforme, tot i què s'observa un
+increment d'observacions a partir de les 5 hores amb un màxim al voltant de 8h.
+La classificació feta a *insolation_bin* indica que predominen els dies
+assolellats, ja que les hores d'insolació es troben en els intervals 5-10 hores
+o 10+ hores.
 
 Representem la sèrie temporal de les mateixes variables numèriques:
 
@@ -363,11 +501,25 @@ grid.arrange(avg_temp_plot, precipitation_plot, avg_wind_plot, max_wind_plot,
 ```
 \normalsize
 
-Com era d'esperar, la variable *avg_daily_temp* mostra una fluctuació associada amb les estacions de l'any on l'hivern té les temperatures més baixes i l'estiu les més altes. Pel que fa a la *daily_precipitation*, s'observen alguns dies amb pluviometries elevades sobretot entre els mesos de Novembre i Març, en menor mesura en els mesos d'Abril a Juny. Tot i això, s'observa un descens de la precipitació des de Novembre del 2020 fins a l'Octubre del 2022 amb menys pics que sobrepassen els 50 mm. Pel que fa a les velocitats del vent, no s'observen variacions significatives en els valors promitjos en funció de la data, indicant que l'època de l'any no afectaria a l'electricitat produïda amb energia eòlica. La *insolation* fluctua amb la data com era d'esperar ja que a l'hivern hi ha menys dies de llum en comparació amb l'estiu on el dia dura més hores. Finalment, l'*avg_pressure* no mostra una tendència clara amb la data, demostrant clarament que no és estrictament necessari tenir baixes pressions perquè hi hagi precipitació i vent.
+Com era d'esperar, la variable *avg_daily_temp* mostra una fluctuació associada
+amb les estacions de l'any on l'hivern té les temperatures més baixes i l'estiu
+les més altes. Pel que fa a la *daily_precipitation*, s'observen alguns dies amb
+pluviometries elevades sobretot entre els mesos de Novembre i Març, en menor
+mesura en els mesos d'Abril a Juny. Tot i això, s'observa un descens de la
+precipitació des de Novembre del 2020 fins a l'Octubre del 2022 amb menys pics
+que sobrepassen els 50 mm. Pel que fa a les velocitats del vent, no s'observen
+variacions significatives en els valors promitjos en funció de la data, indicant
+que l'època de l'any no afectaria a l'electricitat produïda amb energia eòlica.
+La *insolation* fluctua amb la data com era d'esperar ja que a l'hivern hi ha
+menys dies de llum en comparació amb l'estiu on el dia dura més hores.
+Finalment, l'*avg_pressure* no mostra una tendència clara amb la data,
+demostrant clarament que no és estrictament necessari tenir baixes pressions
+perquè hi hagi precipitació i vent.
 
 ## 2.3 Unió dels dos datasets
 
-Unim els dos datasets per tal de poder fer l'anàlisi de les dades. La columna que utilitzarem per fer la unió és la data:
+Unim els dos datasets per tal de poder fer l'anàlisi de les dades. La columna
+que utilitzarem per fer la unió és la data:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -379,7 +531,8 @@ str(final_dataset)
 ```
 \normalsize
 
-El dataset final té gairebé 228.000 files i 15 columnes. D'aquestes, tenim una variable tipus *date*, 9 variables numèriques i 5 categòriques.
+El dataset final té gairebé 228.000 files i 15 columnes. D'aquestes, tenim una
+variable tipus *date*, 9 variables numèriques i 5 categòriques.
 
 ## 2.4 Guardar dataset final en un fitxer csv
 
@@ -396,7 +549,13 @@ write.csv(final_dataset, file = "data/final_dataset.csv", row.names = FALSE)
 
 ## 3.1. Gestió dels zeros o elements buits
 
-Degut a la necessitat de reduir la quantitat de dades com també assegurar que els datasets ESIOS i AEMET tenien la mateixa granularitat per poder-los unir, s'ha decidit tractar els valors nuls identificats durant el preprocessat (veure fitxer *PRA2_preprocessing.Rmd* i pdf associat). El tractament que s'ha fet, ha estat l'imputació de valors a partir de l'interpolació lineal, ja què estem treballant amb dades temporals. Per tant, el dataset en aquest punt ja no conté valors buits:
+Degut a la necessitat de reduir la quantitat de dades com també assegurar que
+els datasets ESIOS i AEMET tenien la mateixa granularitat per poder-los unir,
+s'ha decidit tractar els valors nuls identificats durant el preprocessat (veure
+fitxer *PRA2_preprocessing.Rmd* i pdf associat). El tractament que s'ha fet, ha
+estat l'imputació de valors a partir de l'interpolació lineal, ja què estem
+treballant amb dades temporals. Per tant, el dataset en aquest punt ja no conté
+valors buits:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -407,7 +566,10 @@ summary(is.na(final_dataset))
 
 ## 3.2. Identificació i gestió de valors extrems
 
-Generalment, es consideren outliers tots aquells valors que es troben molt lluny dels valors de la resta de la mostra. En una distribució normal, això equival a $\pm 3\sigma$ respecte el valor promig. Per això, podem estandarditzar les columnes numèriques i representar els boxplots:
+Generalment, es consideren outliers tots aquells valors que es troben molt lluny
+dels valors de la resta de la mostra. En una distribució normal, això equival a
+$\pm 3\sigma$ respecte el valor promig. Per això, podem estandarditzar les
+columnes numèriques i representar els boxplots:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=2, fig.width=6, fig.align='center'}
@@ -436,7 +598,20 @@ ggplot(normalized_data, aes(y = Variables, x = Values)) +
 ```
 \normalsize
 
-A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les variables numèriques. Les variables *avg_pressure* i *insolation* no tenen outliers, mentre què *avg_daily_temp*, *renewable_generation_perc*, *energy_total_mwh* i *avg_total_price_eur_mwh* en presenten alguns. Finalment, *max_wind_speed*, *avg_wind_speed* i *daily_precipitation* tenen un nombre molt elevat d'outliers, essent la darrera, aquella amb més valors atípics. Tanmateix, aquestes són dades que provenen de fonts fiables. A més, les dades d'origen meteorològic estan sotmeses a una gran aleatorietat deguda a la naturalesa caòtica d'aquest tipus de sistemes. D'altra banda, la fluctuació de les variables energètiques té també un alt component aleatori ja que estan influenciades per factors externs com la meteorologia, la demanda, l'especulació dels mercats, etc. Per tant, la presència d'outliers no està ocasionada per registres incorrectes sinó per la naturalesa de les dades i no els eliminarem de les nostres anàlisis.
+A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les
+variables numèriques. Les variables *avg_pressure* i *insolation* no tenen
+outliers, mentre què *avg_daily_temp*, *renewable_generation_perc*,
+*energy_total_mwh* i *avg_total_price_eur_mwh* en presenten alguns. Finalment,
+*max_wind_speed*, *avg_wind_speed* i *daily_precipitation* tenen un nombre molt
+elevat d'outliers, essent la darrera, aquella amb més valors atípics. Tanmateix,
+aquestes són dades que provenen de fonts fiables. A més, les dades d'origen
+meteorològic estan sotmeses a una gran aleatorietat deguda a la naturalesa
+caòtica d'aquest tipus de sistemes. D'altra banda, la fluctuació de les
+variables energètiques té també un alt component aleatori ja que estan
+influenciades per factors externs com la meteorologia, la demanda, l'especulació
+dels mercats, etc. Per tant, la presència d'outliers no està ocasionada per
+registres incorrectes sinó per la naturalesa de les dades i no els eliminarem de
+les nostres anàlisis.
 
 # 4. Anàlisi de les dades
 
@@ -444,7 +619,10 @@ A partir dels boxplots, podem veure que hi ha diferent nombre d'outliers en les 
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
-Seleccionarem les variables numèriques *avg_total_price_eur_mwh*, *energy_total_mwh*, *renewable_generation_perc*, *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure* per crear una matriu de correlació lineal:
+Seleccionarem les variables numèriques *avg_total_price_eur_mwh*,
+*energy_total_mwh*, *renewable_generation_perc*, *avg_daily_temp*,
+*daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i
+*avg_pressure* per crear una matriu de correlació lineal:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -458,7 +636,8 @@ subset_numeric_variables <- final_dataset[, numeric_variables]
 ```
 \normalsize
 
-També estandarditzarem les variables per reduir la influència que poden tenir els diferents rangs de dades:
+També estandarditzarem les variables per reduir la influència que poden tenir
+els diferents rangs de dades:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -476,7 +655,9 @@ summary(standard_num_vars)
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-Comprovem la normalitat de les variables numèriques meteorològiques *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*, *insolation* i *avg_pressure* fent servir gràfics Quantil-Quantil:
+Comprovem la normalitat de les variables numèriques meteorològiques
+*avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*,
+*insolation* i *avg_pressure* fent servir gràfics Quantil-Quantil:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=10, fig.align='center'}
@@ -532,7 +713,22 @@ grid.arrange(qq_adt, qq_dp, qq_aws, qq_mws, qq_i, qq_avg_p, qq_avg_price, qq_et,
 ```
 \normalsize
 
-El *QQ-plot* permet observar com de propera és la distribució de les dades a la normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà la distribució. Per tant, podem dir què *avg_daily_temp* i *energy_total_mwh* segueixen una distribució pràcticament normal tot i què les cues tenen bastantes observacions (veure seccions 2.1.10 i 2.2.3). La resta de variables no presenten distribucions normals; l'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW, mentre què *renewable_generation_perc* presenta una doble distribució, però aquesta té moltes més observacions en el rang de percentatges entre 0 i 35% (veure secció 2.1.10). La variable *insolation* té una distribució bastant uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables *daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation* (veure secció 2.2.3).
+El *QQ-plot* permet observar com de propera és la distribució de les dades a la
+normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà
+la distribució. Per tant, podem dir què *avg_daily_temp* i *energy_total_mwh*
+segueixen una distribució pràcticament normal tot i què les cues tenen bastantes
+observacions (veure seccions 2.1.10 i 2.2.3). La resta de variables no presenten
+distribucions normals; l'*avg_total_price_eur_mwh* presenta dues distribucions,
+la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de
+200 MW, mentre què *renewable_generation_perc* presenta una doble distribució,
+però aquesta té moltes més observacions en el rang de percentatges entre 0 i 35%
+(veure secció 2.1.10). La variable *insolation* té una distribució bastant
+uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre
+que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de
+870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables
+*daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions
+esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation*
+(veure secció 2.2.3).
 
 
 **Proves estadístiques**
@@ -549,13 +745,50 @@ corrplot(corr_matrix_data, method = "number", type = "lower",
 ```
 \normalsize
 
-La matriu de correlació de les variables numèriques mostra una forta correlació lineal positiva entre les variables *max_wind_speed* i *avg_wind_speed*. Això és degut a què com més vent fa, major serà la velocitat màxima, a més, el càlcul de la velocitat promitja contindrà també els valors màxims. Per tant, en posteriors anàlisis es podrà descartar una de les dues. També s'observa una moderada dependència lineal positiva entre les variables *insolation* i *avg_daily_temp*. Això té sentit ja què els dies més càlids solen estar associats amb bon temps i aquests es troben normalment a l'estiu on la duració del dia és més llarga, augmentant les hores d'insolació. D'altra banda, els dies plujosos solen tenir una menor temperatura perquè sol ploure més a la primavera o tardor on les temperatures no són tan elevades com a l'estiu (lleugera correlació positiva entre *avg_daily_temp* i *daily_precipitation*). També s'observa una correlació negativa entre les variables *insolation* i *daily_precipitation*. Això és degut a què els dies plujosos, els núvols tapen el sol i, per tant, hi ha menys hores d'insolació. A més, també sol fer més vent, ja què hi ha certa correlació positiva entre *insolation* i *max_wind_speed*. Les variables *max_wind_speed* (i *avg_wind_speed*) i *daily_precipitation* tenen una correlació lleugerament positiva, ja què alguns dies plujosos sol fer vent, mentre què les variables *avg_pressure* i *avg_daily_temp* tenen una correlació lleugerament positiva, ja què els dies amb anticicló solen ser dies més càlids, ja què els núvols bloquejen part de la radiació solar quan fa mal temps. També s'observa certa correlació positiva entre *avg_daily_temp* i *avg_total_price_eur_mwh* indicant què el preu es pot veure lleugerament afectat per la temperatura. Això podria ser degut al fet què els dies més càlids la demanda sol incrementar per l'ús de l'aire acondicionat i, per tant, el preu del MWh augmenta. D'altra banda, s'observa certa correlació negativa entre les variables *max_wind_speed* i *avg_wind_speed* indicant que els dies ventosos disminueix el preu de l'electricitat. Això pot estar degut a què l'energia eòlica és renovable i té un preu de producció més barat.
+La matriu de correlació de les variables numèriques mostra una forta correlació
+lineal positiva entre les variables *max_wind_speed* i *avg_wind_speed*. Això és
+degut a què com més vent fa, major serà la velocitat màxima, a més, el càlcul de
+la velocitat promitja contindrà també els valors màxims. Per tant, en posteriors
+anàlisis es podrà descartar una de les dues. També s'observa una moderada
+dependència lineal positiva entre les variables *insolation* i *avg_daily_temp*.
+Això té sentit ja què els dies més càlids solen estar associats amb bon temps i
+aquests es troben normalment a l'estiu on la duració del dia és més llarga,
+augmentant les hores d'insolació. D'altra banda, els dies plujosos solen tenir
+una menor temperatura perquè sol ploure més a la primavera o tardor on les
+temperatures no són tan elevades com a l'estiu (lleugera correlació positiva
+entre *avg_daily_temp* i *daily_precipitation*). També s'observa una correlació
+negativa entre les variables *insolation* i *daily_precipitation*. Això és degut
+a què els dies plujosos, els núvols tapen el sol i, per tant, hi ha menys hores
+d'insolació. A més, també sol fer més vent, ja què hi ha certa correlació
+positiva entre *insolation* i *max_wind_speed*. Les variables *max_wind_speed*
+(i *avg_wind_speed*) i *daily_precipitation* tenen una correlació lleugerament
+positiva, ja què alguns dies plujosos sol fer vent, mentre què les variables
+*avg_pressure* i *avg_daily_temp* tenen una correlació lleugerament positiva, ja
+què els dies amb anticicló solen ser dies més càlids, ja què els núvols
+bloquejen part de la radiació solar quan fa mal temps. També s'observa certa
+correlació positiva entre *avg_daily_temp* i *avg_total_price_eur_mwh* indicant
+què el preu es pot veure lleugerament afectat per la temperatura. Això podria
+ser degut al fet què els dies més càlids la demanda sol incrementar per l'ús de
+l'aire acondicionat i, per tant, el preu del MWh augmenta. D'altra banda,
+s'observa certa correlació negativa entre les variables *max_wind_speed* i
+*avg_wind_speed* indicant que els dies ventosos disminueix el preu de
+l'electricitat. Això pot estar degut a què l'energia eòlica és renovable i té un
+preu de producció més barat.
 
 ## 4.2.  Anàlisi de *renewable_generation_perc_bin* en funció de la meteorologia i *energy_source*
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
-Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el percentatge de produccio d'energia renovable. Per això, crearem un subset de les dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable *renewable_generation_perc_bin* conté 4 grups (veure gràfic de barres a la secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a l'energia hidroelèctrica i el grup *76-100* es correspon amb les files que tenen *energy_source=total*, ja què mai hi ha una font d'energia renovable que arribi a aquests percentatges per si sola. Per últim, descartarem la variable *avg_wind_speed* en el model ja què té una forta correlació amb la variable *max_wind_speed* (veure secció 4.1).
+Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el
+percentatge de produccio d'energia renovable. Per això, crearem un subset de les
+dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable
+*renewable_generation_perc_bin* conté 4 grups (veure gràfic de barres a la
+secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a
+l'energia hidroelèctrica i el grup *76-100* es correspon amb les files que tenen
+*energy_source=total*, ja què mai hi ha una font d'energia renovable que arribi
+a aquests percentatges per si sola. Per últim, descartarem la variable
+*avg_wind_speed* en el model ja què té una forta correlació amb la variable
+*max_wind_speed* (veure secció 4.1).
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -578,11 +811,20 @@ summary(subset_energy_source_type)
 ```
 \normalsize
 
-L'anàlisi que aplicarem serà una regressió logística multivariable on *renewable_generation_perc_bin* serà la variable objectiu i contindrà dos grups (*0-35* i *36-75*).
+L'anàlisi que aplicarem serà una regressió logística multivariable on
+*renewable_generation_perc_bin* serà la variable objectiu i contindrà dos grups
+(*0-35* i *36-75*).
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-La normalitat de les variables numèriques s'ha comprovat en l'apartat 4.1. Per tant, no la tornarem a comprovar. En aquest cas, ens centrarem en les variables categòriques: *energy_source* té una distribució de comptes uniforme per les diferents categories tal i com mostra el resum de més amunt, mentre què *renewable_generation_perc_bin* està desbalancejada amb la majoria d'observacions (~96%) en el rang *0-35*. Per això, aplicarem la tècnica de *downsampling*, seleccionant un subset de les dades per tal de contrarestar aquest desbalanç:
+La normalitat de les variables numèriques s'ha comprovat en l'apartat 4.1. Per
+tant, no la tornarem a comprovar. En aquest cas, ens centrarem en les variables
+categòriques: *energy_source* té una distribució de comptes uniforme per les
+diferents categories tal i com mostra el resum de més amunt, mentre què
+*renewable_generation_perc_bin* està desbalancejada amb la majoria
+d'observacions (~96%) en el rang *0-35*. Per això, aplicarem la tècnica de
+*downsampling*, seleccionant un subset de les dades per tal de contrarestar
+aquest desbalanç:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Apliquem el downsampling al dataset
@@ -595,7 +837,8 @@ downsampled_data <- downSample(x = subset_energy_source_type[,
 table(downsampled_data$renewable_generation_perc_bin)
 ```
 
-Comprovem l'homogeneitat de les variàncies de les variables numèriques respecte la variable *renewable_generation_perc_bin*:
+Comprovem l'homogeneitat de les variàncies de les variables numèriques respecte
+la variable *renewable_generation_perc_bin*:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -608,7 +851,13 @@ leveneTest(downsampled_data$avg_pressure ~ downsampled_data$renewable_generation
 ```
 \normalsize
 
-El test de Levene rebutja la hipòtesi nul·la per les variables numèriques que volem analitzar respecte la variable *renewable_generation_perc_bin*, per tant, les distribucions no provenen de mostres amb variàncies uniformes. Tot i els resultats obtinguts que mostren que les distribucions no són normals i la no uniformitat de la variància, la regressió logística és menys sensible a les condicions de normalitat i homoscedasticitat, per tant, procedirem amb la seva implentació. [8]
+El test de Levene rebutja la hipòtesi nul·la per les variables numèriques que
+volem analitzar respecte la variable *renewable_generation_perc_bin*, per tant,
+les distribucions no provenen de mostres amb variàncies uniformes. Tot i els
+resultats obtinguts que mostren que les distribucions no són normals i la no
+uniformitat de la variància, la regressió logística és menys sensible a les
+condicions de normalitat i homoscedasticitat, per tant, procedirem amb la seva
+implentació. [8]
 
 **Proves estadístiques**
 
@@ -625,9 +874,21 @@ summary(logistic_renew_perc)
 ```
 \normalsize
 
-El model obtingut mostra que les variables amb més pes són, en primer lloc, l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que aquestes variables tenen valors p propers a 1, fet que indicaria que la relació entre aquestes variables i *renewable_generation_perc_bin* no és significativa. Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*, l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients tenen valors p inferiors a 0.05, per tant, la relació és significativa. Finalment, la variable *daily_precipitation* té poc pes en la predicció de *renewable_generation_perc_bin*. 
+El model obtingut mostra que les variables amb més pes són, en primer lloc,
+l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte
+l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes
+significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que
+aquestes variables tenen valors p propers a 1, fet que indicaria que la relació
+entre aquestes variables i *renewable_generation_perc_bin* no és significativa.
+Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*,
+l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora
+de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients
+tenen valors p inferiors a 0.05, per tant, la relació és significativa.
+Finalment, la variable *daily_precipitation* té poc pes en la predicció de
+*renewable_generation_perc_bin*. 
 
-Calculem la matriu de confusió i la corba ROC per avaluar els resultats del model:
+Calculem la matriu de confusió i la corba ROC per avaluar els resultats del
+model:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -662,17 +923,36 @@ library(ROCR)
 ```
 \normalsize
 
-La matriu de confusió mostra com el model de regressió logística és capaç de discriminar correctament els valors de classe, ja què té una *accuracy* del 91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la proporció de de valors positius (*36-75* en aquest cas) classificats correctament, mentre què la *specificity* ens indica la proporció de valors negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem que el model classifica millor la classe *0-35* tot i haver utilitzat un *downsampling* de la classe majoritària. L'àrea sota la corva té un valor de 0.92, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
+La matriu de confusió mostra com el model de regressió logística és capaç de
+discriminar correctament els valors de classe, ja què té una *accuracy* del
+91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la
+proporció de de valors positius (*36-75* en aquest cas) classificats
+correctament, mentre què la *specificity* ens indica la proporció de valors
+negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si
+ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem
+que el model classifica millor la classe *0-35* tot i haver utilitzat un
+*downsampling* de la classe majoritària. L'àrea sota la corva té un valor de
+0.92, indicant que el model seria capaç de classificar correctament entre les
+diferents categories de *renewable_generation_perc_bin*.
 
 
 ## 4.3. Anàlisi i contrast d'hipòtesis de *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
 
-Jo faria algun test de contrast d'hipòtesis per exemple de la variable *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
+Jo faria algun test de contrast d'hipòtesis per exemple de la variable
+*avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i
+*avg_pressure_bin*.
 
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
-Analitzarem el preu mitjà total en eur/mwh *avg_total_price_eur_mwh* sobre les variables de *insolation_bin* i *avg_pressure_bin*. La variable *insolation_bin* determinarà la quantitat de radiació solar comptabilitzada en una àrea determinada, mentre que la variable *avg_pressure_bin* determinarà la pressió atmosfèrica capturada en la mateixa àrea. Les dues variables són de tipus character descriptiu, englobant un rang de dades determinat. Amb aquesta anàlisis es vol analitzar si una major pressió atmosfèrica i radiació solar equivalen a un menor preu de l'energia.
+Analitzarem el preu mitjà total en eur/mwh *avg_total_price_eur_mwh* sobre les
+variables de *insolation_bin* i *avg_pressure_bin*. La variable *insolation_bin*
+determinarà la quantitat de radiació solar comptabilitzada en una àrea
+determinada, mentre que la variable *avg_pressure_bin* determinarà la pressió
+atmosfèrica capturada en la mateixa àrea. Les dues variables són de tipus
+character descriptiu, englobant un rang de dades determinat. Amb aquesta
+anàlisis es vol analitzar si una major pressió atmosfèrica i radiació solar
+equivalen a un menor preu de l'energia.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -699,11 +979,16 @@ summary(subset_avg_total_price_eur_mwh)
 ```
 \normalsize
 
-Aplicarem un anàlisi de correlació on la variable *avg_total_price_eur_mwh* serà l'objectiu a analitzar en funció de les variables *insolation_bin* i *avg_pressure_bin*.
+Aplicarem un anàlisi de correlació on la variable *avg_total_price_eur_mwh* serà
+l'objectiu a analitzar en funció de les variables *insolation_bin* i
+*avg_pressure_bin*.
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-La normalitat de les variables numèriques es pot comprovar en l'apartat anterior 4.1. En aquest cas, ens centrarem en comprovar l'homogeneitat de les variàncies de les nostres variables objetiu respecte la variable principal *avg_total_price_eur_mwh* per mitjà del test de Bartlett:
+La normalitat de les variables numèriques es pot comprovar en l'apartat anterior
+4.1. En aquest cas, ens centrarem en comprovar l'homogeneitat de les variàncies
+de les nostres variables objetiu respecte la variable principal
+*avg_total_price_eur_mwh* per mitjà del test de Bartlett:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -712,7 +997,11 @@ bartlett.test(avg_total_price_eur_mwh ~ insolation_bin, data = aemet_dataset)
 ```
 \normalsize
 
-El test de Bartlett s'utilitza per examinar si un nombre real i positiu de mostres d'una població té variàncies iguals. Aquest test també és conegut com a "homogeneïtat de variàncies", a diferència del test de Levene's utilitzat en l'apartat anterior que rebutja la hipòtesi nul·la per les variables numèriques que volem analitzar respecte la variable objectiu.
+El test de Bartlett s'utilitza per examinar si un nombre real i positiu de
+mostres d'una població té variàncies iguals. Aquest test també és conegut com a
+"homogeneïtat de variàncies", a diferència del test de Levene's utilitzat en
+l'apartat anterior que rebutja la hipòtesi nul·la per les variables numèriques
+que volem analitzar respecte la variable objectiu.
 
 **Proves estadístiques**
 
@@ -733,9 +1022,21 @@ summary(logistic_avg_price)
 ```
 \normalsize
 
-El model obtingut mostra que les variables amb més pes són, en primer lloc, l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que aquestes variables tenen valors p propers a 1, fet que indicaria que la relació entre aquestes variables i *renewable_generation_perc_bin* no és significativa. Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*, l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients tenen valors p inferiors a 0.05, per tant, la relació és significativa. Finalment, la variable *daily_precipitation* té poc pes en la predicció de *renewable_generation_perc_bin*. 
+El model obtingut mostra que les variables amb més pes són, en primer lloc,
+l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte
+l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes
+significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que
+aquestes variables tenen valors p propers a 1, fet que indicaria que la relació
+entre aquestes variables i *renewable_generation_perc_bin* no és significativa.
+Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*,
+l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora
+de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients
+tenen valors p inferiors a 0.05, per tant, la relació és significativa.
+Finalment, la variable *daily_precipitation* té poc pes en la predicció de
+*renewable_generation_perc_bin*. 
 
-Calculem la matriu de confusió i la corba ROC per avaluar els resultats del model:
+Calculem la matriu de confusió i la corba ROC per avaluar els resultats del
+model:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -767,7 +1068,17 @@ confusionMatrix(as.factor(predicition_names),
 ```
 \normalsize
 
-La matriu de confusió mostra com el model de regressió logística és capaç de discriminar correctament els valors de classe, ja què té una *accuracy* del 91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la proporció de de valors positius (*36-75* en aquest cas) classificats correctament, mentre què la *specificity* ens indica la proporció de valors negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem que el model classifica millor la classe *0-35* tot i haver utilitzat un *downsampling* de la classe majoritària. L'àrea sota la corva té un valor de 0.92, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
+La matriu de confusió mostra com el model de regressió logística és capaç de
+discriminar correctament els valors de classe, ja què té una *accuracy* del
+91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la
+proporció de de valors positius (*36-75* en aquest cas) classificats
+correctament, mentre què la *specificity* ens indica la proporció de valors
+negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si
+ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem
+que el model classifica millor la classe *0-35* tot i haver utilitzat un
+*downsampling* de la classe majoritària. L'àrea sota la corva té un valor de
+0.92, indicant que el model seria capaç de classificar correctament entre les
+diferents categories de *renewable_generation_perc_bin*.
 
 
 # Resolució del problema: Conclusions
@@ -790,15 +1101,15 @@ df
 
 # Referències
 
-[1] Alexis Romero, "La guerra a Ucraïna i la creixent inflació ressusciten el 
-debat sobre la intervenció del mercat elèctric" (Público, 01/03/2022). 
+[1] Alexis Romero, "La guerra a Ucraïna i la creixent inflació ressusciten el
+debat sobre la intervenció del mercat elèctric" (Público, 01/03/2022).
 https://www.publico.es/public/encariment-preus-guerra-ucraina-i-creixent-inflacio-ressusciten-debat-intervencio-mercat-electric.html
 
-[2] Vicenç Batalla, "La UE frenarà la pujada de l'electricitat per la guerra" 
+[2] Vicenç Batalla, "La UE frenarà la pujada de l'electricitat per la guerra"
 (El Punt Avui, 12/03/2022).
 https://www.elpuntavui.cat/politica/article/17-politica/2111814-la-ue-frenara-la-pujada-de-l-electricitat-per-la-guerra.html
 
-[3] elnacional.cat, "La situació actual de les energies renovables a Catalunya: 
+[3] elnacional.cat, "La situació actual de les energies renovables a Catalunya:
 què tenim i cap on anem?" (El Nacional, 06/06/2022).
 https://www.elnacional.cat/ca/branded/energies-renovables-catalunya-cap-anem_685709_102.html
 
@@ -806,16 +1117,17 @@ https://www.elnacional.cat/ca/branded/energies-renovables-catalunya-cap-anem_685
 renovables" (Ourworldindata.org, 2022).
 https://ca.dsnsolar.com/info/the-price-decline-of-electricity-from-renewabl-70291585.html
 
-[5] naciodigital.cat, "Tindrem prou energia només amb les renovables?" 
-(Nació Digital, 2022).
+[5] naciodigital.cat, "Tindrem prou energia només amb les renovables?" (Nació
+Digital, 2022).
 https://www.naciodigital.cat/noticia/230097/canvi-climatic-tindrem-prou-energia-nomes-renovables
 
-[6] Esther Manzano i Albert Queraltó, "Webscraping of Energy Prices and Renewable
-Energy Production" (GitHub, 2022).
+[6] Esther Manzano i Albert Queraltó, "Webscraping of Energy Prices and
+Renewable Energy Production" (GitHub, 2022).
 https://github.com/albert-queralto/scraping-energy-prices-spain
 
 [7] Esther Manzano i Albert Queraltó, "Evolution of the price of electricity and
 the renewable energy production in Spain" (Zenodo, 2022).
 https://doi.org/10.5281/zenodo.7335618
 
-[8] Montserrat Guillén Estany i María Teresa Alonso Alonso, "Models de regressió logística", UOC (2020).
+[8] Montserrat Guillén Estany i María Teresa Alonso Alonso, "Models de regressió
+logística", UOC (2020).
