@@ -342,7 +342,7 @@ estan altament correlacionades amb *avg_daily_temp*, per tant, mantindrem
 aquesta última. Pel que fa a les variables *height_above_sea*, *max_pressure*,
 *min_pressure* i *avg_pressure*, aquestes també tenen una forta correlació. Per
 tant, mantindrem només *avg_pressure*. Finalment, també eliminarem la direcció
-del vent, ja què hem considerat que no és útil per la nostre anàlisis. Així
+del vent, ja què hem considerat que no és útil per la nostra anàlisis. Així
 doncs, les columnes que es volen conservar són: *date*, *province*,
 *avg_daily_temp*, *daily_precipitation*, *avg_wind_speed*, *max_wind_speed*,
 *insolation* i *avg_pressure*:
@@ -780,7 +780,7 @@ preu de producció més barat.
 **Selecció dels grups de dades i tipus d'anàlisi**
 
 Analitzarem la contribució de la meteorologia i el tipus de font d'energia en el
-percentatge de produccio d'energia renovable. Per això, crearem un subset de les
+percentatge de producció d'energia renovable. Per això, crearem un subset de les
 dades on s'exclourà el valor *energy_source=total*. D'altra banda, la variable
 *renewable_generation_perc_bin* conté 4 grups (veure gràfic de barres a la
 secció 2.1.10), però el grup *Below 0* es pot filtrar, ja què només afecta a
@@ -905,21 +905,6 @@ predicition_names <- levels(
 # Calculem la matriu de confusió
 confusionMatrix(as.factor(predicition_names), 
                 downsampled_data$renewable_generation_perc_bin)
-
-library(ROCR)
-
-# Càlcul de la corba ROC i de la AUC
-#r_log = roc(downsampled_data$renewable_generation_perc_bin, 
-            #as.numeric(prediccions_log))
-            #data = downsampled_data, auc = TRUE, plot = TRUE)
-
-#r_log
-
-#r_log = roc(response = downsampled_data$renewable_generation_perc_bin, predictor = prediccions_log[,"1"])
-
-#plot(r_log, col="red", lwd=3, main="ROC curve QDA")
-
-#auc(r_log)
 ```
 \normalsize
 
@@ -937,11 +922,6 @@ diferents categories de *renewable_generation_perc_bin*.
 
 
 ## 4.3. Anàlisi i contrast d'hipòtesis de *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
-
-Jo faria algun test de contrast d'hipòtesis per exemple de la variable
-*avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i
-*avg_pressure_bin*.
-
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
@@ -993,7 +973,13 @@ de les nostres variables objetiu respecte la variable principal
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Comprovem la homogeneïtat de les variàncies mitjançant el test de Bartlett
-bartlett.test(avg_total_price_eur_mwh ~ insolation_bin, data = aemet_dataset)
+aemet_dataset<-select(aemet_dataset, insolation_bin, avg_pressure_bin)
+bartlett.test(insolation_bin ~ avg_pressure_bin(supp,dose), data=ToothGrowth)
+bartlett.test(aemet_dataset$insolation_bin, aemet_dataset$avg_pressure_bin)
+
+
+
+#bartlett.test(avg_total_price_eur_mwh ~ insolation_bin, data = aemet_dataset)
 ```
 \normalsize
 
@@ -1022,70 +1008,42 @@ summary(logistic_avg_price)
 ```
 \normalsize
 
-El model obtingut mostra que les variables amb més pes són, en primer lloc,
-l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte
-l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes
-significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que
-aquestes variables tenen valors p propers a 1, fet que indicaria que la relació
-entre aquestes variables i *renewable_generation_perc_bin* no és significativa.
-Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*,
-l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora
-de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients
-tenen valors p inferiors a 0.05, per tant, la relació és significativa.
-Finalment, la variable *daily_precipitation* té poc pes en la predicció de
-*renewable_generation_perc_bin*. 
-
-Calculem la matriu de confusió i la corba ROC per avaluar els resultats del
-model:
-
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Generem predictions per poder calcular la matriu de confusió
-predictions_log <- predict(logistic_renew_perc, data = downsampled_data, 
-                           type = 'response')
-
-# Establim probabilitat per assignar els dos grups i assignem els noms originals
-# a les prediccions
-predictions_binary <- as.factor(predictions_log>0.5)
-predicition_names <- levels(
-  downsampled_data$renewable_generation_perc_bin)[predictions_binary]
-
-# Calculem la matriu de confusió
-confusionMatrix(as.factor(predicition_names), 
-                downsampled_data$renewable_generation_perc_bin)
-
-# Càlcul de la corba ROC i de la AUC
-#r_log = roc(downsampled_data$renewable_generation_perc_bin, 
-            #as.numeric(prediccions_log))
-            #data = downsampled_data, auc = TRUE, plot = TRUE)
-#r_log
-
-#r_log = roc(response = downsampled_data$renewable_generation_perc_bin, predictor = prediccions_log[,"1"])
-
-#plot(r_log, col="red", lwd=3, main="ROC curve QDA")
-
-#auc(r_log)
-```
-\normalsize
-
-La matriu de confusió mostra com el model de regressió logística és capaç de
-discriminar correctament els valors de classe, ja què té una *accuracy* del
-91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la
-proporció de de valors positius (*36-75* en aquest cas) classificats
-correctament, mentre què la *specificity* ens indica la proporció de valors
-negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si
-ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem
-que el model classifica millor la classe *0-35* tot i haver utilitzat un
-*downsampling* de la classe majoritària. L'àrea sota la corva té un valor de
-0.92, indicant que el model seria capaç de classificar correctament entre les
-diferents categories de *renewable_generation_perc_bin*.
-
 
 # Resolució del problema: Conclusions
 
-f
+A l'inici de la pràctica ens plantejavem les següents hipòtesis a resoldre:
 
+- Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període
+  de temps mencionat.
+  
+- Entendre la relació entre el preu de l'energia elèctrica, la producció
+  d'energies renovables i la influència de la meteorologia.
+  
+- Discernir quina font d'energia renovable té un impacte més rellevant en el
+  preu de l'energia.
+  
+- Predir el preu de l'energia elèctrica a Espanya en funció de la producció
+  d'energia renovable.
 
+Dels resultats obtinguts al llarg de la pràctica podem determinar les següents
+conclusions tenint en compte les hipòtesis anteriors:
+
+- L'evolució del preu de l'energia presenta una tendència a l'alça en el període
+de temps analitzat en aquesta pràctica. S'observa un augment progressiu, essent 
+el valor mitjà del preu de l'energia (eur/mwh) el més baix capturat el dia 31 de
+Gener de 2021 a 6.9 eur/mwh i el més alt el dia 8 de Març de 2022 a 556.07 eur/mwh.
+
+- S'observa una forta correlació entre la influència de la meteorologia i la
+producció d'energies renovables. Per exemple, les províncies que presenten 
+temperatures mitjanes més elevades, un menor percentatge de precipitació i un
+major nombre en la variable insolation, tendiràn a tenir una producció d'energia
+solar més elevada. Així mateix, les províncies amb una mitjana o màxima de velocitat 
+del vent més elevades tendiràn a tenir una producció d'energia eòlica superior.
+
+- Podem veure com la font d'energia que té un impacte més rellevant en el preu de
+l'energia és
+
+- ???
 
 
 # Contribucions
