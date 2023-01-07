@@ -5,11 +5,11 @@ author: "Esther Manzano i Albert Queraltó"
 date: '`r format(Sys.Date(),"%e de %B %Y")`'
 output:
   pdf_document:
-    toc: yes
+    toc: no
   html_document:
     highlight: default
     number_sections: yes
-    toc: yes
+    toc: no
     toc_depth: 2
 fontsize: 10pt
 geometry: "left=1.5cm, right=1.5cm, top=2cm, bottom=1.5cm"
@@ -650,7 +650,7 @@ confusionMatrix(as.factor(predicition_names),
 
 # Càlcul de la corba ROC i de la AUC
 r_log = roc(downsampled_data$renewable_generation_perc_bin, 
-            as.numeric(prediccions_log),
+            as.numeric(predictions_log),
             data = downsampled_data, auc = TRUE, plot = TRUE)
 r_log
 ```
