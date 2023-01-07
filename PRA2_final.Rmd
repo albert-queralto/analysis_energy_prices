@@ -534,9 +534,6 @@ grid.arrange(qq_adt, qq_dp, qq_aws, qq_mws, qq_i, qq_avg_p, qq_avg_price, qq_et,
 
 El *QQ-plot* permet observar com de propera és la distribució de les dades a la normal. És a dir, com més s'acosti la gràfica a la línia recta més normal serà la distribució. Per tant, podem dir què *avg_daily_temp* i *energy_total_mwh* segueixen una distribució pràcticament normal tot i què les cues tenen bastantes observacions (veure seccions 2.1.10 i 2.2.3). La resta de variables no presenten distribucions normals; l'*avg_total_price_eur_mwh* presenta dues distribucions, la primera amb un màxim entorn a 100 MW i la segona amb un màxim al voltant de 200 MW, mentre què *renewable_generation_perc* presenta una doble distribució, però aquesta té moltes més observacions en el rang de percentatges entre 0 i 35% (veure secció 2.1.10). La variable *insolation* té una distribució bastant uniforme amb un augment de les observacions en el rang de 5 a 8 hores, mentre que l'*avg_pressure* té quatre distribucions amb valors promitjos al voltant de 870, 920, 970 i 1000 hPa (veure secció 2.2.3). Les variables *daily_precipitation*, *avg_wind_speed* i *max_wind_speed* tenen distribucions esbiaxades cap a la dreta amb un efecte més pronunciat a *daily_precipitation* (veure secció 2.2.3).
 
-# falta la variancia per les variables numèriques tot i què per calcular-la s'han de comparar dos grups i aquí no ho farem, aplicarem una matriu de correlació
-
-
 
 **Proves estadístiques**
 
@@ -648,42 +645,134 @@ predicition_names <- levels(
 confusionMatrix(as.factor(predicition_names), 
                 downsampled_data$renewable_generation_perc_bin)
 
+library(ROCR)
+
 # Càlcul de la corba ROC i de la AUC
-r_log = roc(downsampled_data$renewable_generation_perc_bin, 
-            as.numeric(prediccions_log),
-            data = downsampled_data, auc = TRUE, plot = TRUE)
-r_log
+#r_log = roc(downsampled_data$renewable_generation_perc_bin, 
+            #as.numeric(prediccions_log))
+            #data = downsampled_data, auc = TRUE, plot = TRUE)
+
+#r_log
+
+#r_log = roc(response = downsampled_data$renewable_generation_perc_bin, predictor = prediccions_log[,"1"])
+
+#plot(r_log, col="red", lwd=3, main="ROC curve QDA")
+
+#auc(r_log)
 ```
 \normalsize
 
 La matriu de confusió mostra com el model de regressió logística és capaç de discriminar correctament els valors de classe, ja què té una *accuracy* del 91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la proporció de de valors positius (*36-75* en aquest cas) classificats correctament, mentre què la *specificity* ens indica la proporció de valors negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem que el model classifica millor la classe *0-35* tot i haver utilitzat un *downsampling* de la classe majoritària. L'àrea sota la corva té un valor de 0.92, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
 
-## 4.3. ????
 
-No té sentit aplicar regressions lineals perquè les variables no són normals
-
-**Selecció dels grups de dades i tipus d'anàlisi**
-
-
-**Comprovació de la normalitat i homogeneïtat de la variància**
-
-
-
-**Proves estadístiques**
-
-
-
-### 4.4. Anàlisi de.....
+## 4.3. Anàlisi i contrast d'hipòtesis de *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
 
 Jo faria algun test de contrast d'hipòtesis per exemple de la variable *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
 
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
+Analitzarem el preu mitjà total en eur/mwh *avg_total_price_eur_mwh* sobre les variables de *insolation_bin* i *avg_pressure_bin*. La variable *insolation_bin* determinarà la quantitat de radiació solar comptabilitzada en una àrea determinada, mentre que la variable *avg_pressure_bin* determinarà la pressió atmosfèrica capturada en la mateixa àrea. Les dues variables són de tipus character descriptiu, englobant un rang de dades determinat. Amb aquesta anàlisis es vol analitzar si una major pressió atmosfèrica i radiació solar equivalen a un menor preu de l'energia.
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Filtrem les dades per avg_total_price_eur_mwh, en funció de les variables 
+# insolation_bin i avg_pressure_bin
+subset_avg_total_price_eur_mwh <- standard_num_vars
+
+subset_avg_total_price_eur_mwh$avg_total_price_eur_mwh <- factor(
+  subset_avg_total_price_eur_mwh$avg_total_price_eur_mwh) 
+  
+subset_energy_source_type$insolation_bin <- factor(
+  subset_energy_source_type$insolation_bin, 
+  levels = c("0-5", "5-10", "10"))
+
+subset_energy_source_type$avg_pressure_bin <- factor(
+  subset_energy_source_type$avg_pressure_bin, 
+  levels = c("Depression", "Normal", "Anticyclone"))
+
+# Eliminem nuls ja que l'eliminació dels factors només els transforma a NA, 
+# però les observacions segueixen presents
+subset_avg_total_price_eur_mwh <- subset_avg_total_price_eur_mwh %>% drop_na()
+
+summary(subset_avg_total_price_eur_mwh)
+```
+\normalsize
+
+Aplicarem un anàlisi de correlació on la variable *avg_total_price_eur_mwh* serà l'objectiu a analitzar en funció de les variables *insolation_bin* i *avg_pressure_bin*.
+
 **Comprovació de la normalitat i homogeneïtat de la variància**
+
+La normalitat de les variables numèriques es pot comprovar en l'apartat anterior 4.1. En aquest cas, ens centrarem en comprovar l'homogeneitat de les variàncies de les nostres variables objetiu respecte la variable principal *avg_total_price_eur_mwh* per mitjà del test de Bartlett:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Comprovem la homogeneïtat de les variàncies mitjançant el test de Bartlett
+bartlett.test(avg_total_price_eur_mwh ~ insolation_bin, data = aemet_dataset)
+```
+\normalsize
+
+El test de Bartlett s'utilitza per examinar si un nombre real i positiu de mostres d'una població té variàncies iguals. Aquest test també és conegut com a "homogeneïtat de variàncies", a diferència del test de Levene's utilitzat en l'apartat anterior que rebutja la hipòtesi nul·la per les variables numèriques que volem analitzar respecte la variable objectiu.
 
 **Proves estadístiques**
 
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Calculem la regressió logística entre les variables
+t.test(subset(aemet_dataset, insolation_bin=="10")$insolation_bin,subset(aemet_dataset, insolation_bin=="0-5")$insolation_bin)
+
+
+
+
+logistic_avg_price <- glm(avg_total_price_eur_mwh ~ avg_daily_temp + 
+                             insolation_bin +  avg_pressure_bin,
+                           data = downsampled_data, 
+                           family = binomial(link = logit))
+
+summary(logistic_avg_price)
+```
+\normalsize
+
+El model obtingut mostra que les variables amb més pes són, en primer lloc, l'energia eòlica seguida de la solar ja que tenen coeficients alts, respecte l'energia hidroelèctrica. L'energia nuclear i la termorenovable no tenen un pes significatiu amb coeficients propers a 0. Tot i això, cal tenir en compte que aquestes variables tenen valors p propers a 1, fet que indicaria que la relació entre aquestes variables i *renewable_generation_perc_bin* no és significativa. Pel que fa a les variables numèriques, l'*avg_daily_temp*, la *max_wind_speed*, l'*insolation* i l'*avg_pressure* semblen tenir un pes relativament alt a l'hora de determinar el valor de *renewable_generation_perc_bin*. Els seus coeficients tenen valors p inferiors a 0.05, per tant, la relació és significativa. Finalment, la variable *daily_precipitation* té poc pes en la predicció de *renewable_generation_perc_bin*. 
+
+Calculem la matriu de confusió i la corba ROC per avaluar els resultats del model:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Generem predictions per poder calcular la matriu de confusió
+predictions_log <- predict(logistic_renew_perc, data = downsampled_data, 
+                           type = 'response')
+
+# Establim probabilitat per assignar els dos grups i assignem els noms originals
+# a les prediccions
+predictions_binary <- as.factor(predictions_log>0.5)
+predicition_names <- levels(
+  downsampled_data$renewable_generation_perc_bin)[predictions_binary]
+
+# Calculem la matriu de confusió
+confusionMatrix(as.factor(predicition_names), 
+                downsampled_data$renewable_generation_perc_bin)
+
+# Càlcul de la corba ROC i de la AUC
+#r_log = roc(downsampled_data$renewable_generation_perc_bin, 
+            #as.numeric(prediccions_log))
+            #data = downsampled_data, auc = TRUE, plot = TRUE)
+#r_log
+
+#r_log = roc(response = downsampled_data$renewable_generation_perc_bin, predictor = prediccions_log[,"1"])
+
+#plot(r_log, col="red", lwd=3, main="ROC curve QDA")
+
+#auc(r_log)
+```
+\normalsize
+
+La matriu de confusió mostra com el model de regressió logística és capaç de discriminar correctament els valors de classe, ja què té una *accuracy* del 91.5% i un interval de confiança de [0.91, 0.92]. La *sensitivity* ens indica la proporció de de valors positius (*36-75* en aquest cas) classificats correctament, mentre què la *specificity* ens indica la proporció de valors negatius (*0-35* en el nostre cas) que han estat classificats correctament. Si ens fixem en els valors de sensibilitat (0.86) i la especificitat (0.98), veiem que el model classifica millor la classe *0-35* tot i haver utilitzat un *downsampling* de la classe majoritària. L'àrea sota la corva té un valor de 0.92, indicant que el model seria capaç de classificar correctament entre les diferents categories de *renewable_generation_perc_bin*.
+
+
+# Resolució del problema: Conclusions
+
+f
 
 
 
