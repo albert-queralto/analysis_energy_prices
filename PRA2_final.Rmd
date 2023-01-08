@@ -26,7 +26,7 @@ packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "caret", "corrplot"
               "Hmisc", "rpart", "rpart.plot", "useful", "ROCR", "precrec", "knitr", 
               "lubridate", "stringr", "psych", "pROC", "zoo", "reshape2", 
               "gridExtra", "ggpubr", "rstatix", "lattice", "ResourceSelection", 
-              "car", "quantreg", "rsq")
+              "car", "quantreg", "rsq", "nortest")
 
 # install.packages(packages) # Comentar si no cal instal·lar les llibreries 
 lapply(packages, require, character.only = TRUE)
@@ -72,8 +72,8 @@ o la quantitat de precipitació contribuirà a omplir els embassaments que
 permeten generar energia hidroelèctrica. 
 
 Així doncs, per completar l'anàlisi, també s'ha decidit utilitzar dades
-climàtiques diàries obtingudes de la web https://opendata.aemet.es/ (*dataset
-AEMET*). Entre altres, hi ha dades de temperatures, precipitació, vent,
+climàtiques diàries obtingudes de la web https://opendata.aemet.es/ 
+(*dataset AEMET*). Entre altres, hi ha dades de temperatures, precipitació, vent,
 insolació, etc., en el mateix rang de dates que el dataset d'ESIOS. La
 combinació d'ambdós datasets ens permetrà assolir els objectius següents marcats
 per a aquesta pràctica:
@@ -207,7 +207,8 @@ renew_perc_bin_bar <- ggplot(energy_source_data,
   labs(x = "Intervals de generació renovable", y = "Freqüència") + 
   theme_bw() + theme(text = element_text(size = 11))
 
-grid.arrange(total_price_hist, energy_total_hist, renew_perc_hist, renew_perc_bin_bar, ncol = 4)
+grid.arrange(total_price_hist, energy_total_hist, renew_perc_hist, 
+             renew_perc_bin_bar, ncol = 4)
 ```
 \normalsize
 
@@ -254,7 +255,8 @@ renewable_generation_perc_plot <- ggplot(esios_dataset, aes(x = date,
   theme(plot.title = element_text(hjust = 0.5)) +
   theme_bw() + theme(text = element_text(size = 11))
 
-grid.arrange(total_price_plot, energy_total_plot, renewable_generation_perc_plot, ncol = 3)
+grid.arrange(total_price_plot, energy_total_plot, renewable_generation_perc_plot, 
+             ncol = 3)
 ```
 \normalsize
 
@@ -906,15 +908,12 @@ predicition_names <- levels(
 # Calculem la matriu de confusió
 confusionMatrix(as.factor(predicition_names), 
                 downsampled_data$renewable_generation_perc_bin)
-<<<<<<< HEAD:PRA2_final_backup.Rmd
 
 # Càlcul de la corba ROC i de la AUC
 r_log = roc(downsampled_data$renewable_generation_perc_bin, 
             as.numeric(predictions_log),
             data = downsampled_data, auc = TRUE, plot = TRUE)
 r_log
-=======
->>>>>>> 4552d4607c3bfe48b04f69e4cb79b59e29a3964d:PRA2_final.Rmd
 ```
 \normalsize
 
@@ -940,82 +939,97 @@ Analitzarem el preu mitjà total en eur/mwh *avg_total_price_eur_mwh* sobre les
 variables de *insolation_bin* i *avg_pressure_bin*. La variable *insolation_bin*
 determinarà la quantitat de radiació solar comptabilitzada en una àrea
 determinada, mentre que la variable *avg_pressure_bin* determinarà la pressió
-atmosfèrica capturada en la mateixa àrea. Les dues variables són de tipus
-character descriptiu, englobant un rang de dades determinat. Amb aquesta
-anàlisis es vol analitzar si una major pressió atmosfèrica i radiació solar
-equivalen a un menor preu de l'energia.
+atmosfèrica capturada en la mateixa àrea. Amb aquesta anàlisis es vol analitzar 
+si una major pressió atmosfèrica i radiació solar equivalen a un menor preu de 
+l'energia.
 
-\scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Filtrem les dades per avg_total_price_eur_mwh, en funció de les variables 
-# insolation_bin i avg_pressure_bin
-subset_avg_total_price_eur_mwh <- standard_num_vars
-
-subset_avg_total_price_eur_mwh$avg_total_price_eur_mwh <- factor(
-  subset_avg_total_price_eur_mwh$avg_total_price_eur_mwh) 
-  
-subset_energy_source_type$insolation_bin <- factor(
-  subset_energy_source_type$insolation_bin, 
-  levels = c("0-5", "5-10", "10"))
-
-subset_energy_source_type$avg_pressure_bin <- factor(
-  subset_energy_source_type$avg_pressure_bin, 
-  levels = c("Depression", "Normal", "Anticyclone"))
-
-# Eliminem nuls ja que l'eliminació dels factors només els transforma a NA, 
-# però les observacions segueixen presents
-subset_avg_total_price_eur_mwh <- subset_avg_total_price_eur_mwh %>% drop_na()
-
-summary(subset_avg_total_price_eur_mwh)
-```
-\normalsize
-
-Aplicarem un anàlisi de correlació on la variable *avg_total_price_eur_mwh* serà
-l'objectiu a analitzar en funció de les variables *insolation_bin* i
-*avg_pressure_bin*.
+Aplicarem un contrast d'hipòtesi per tal d'analitzar les diferències potencials
+en la variable *avg_total_price_eur_mwh* respecte els diferents grups de les 
+variables *insolation_bin* i *avg_pressure_bin*.
 
 **Comprovació de la normalitat i homogeneïtat de la variància**
 
-La normalitat de les variables numèriques es pot comprovar en l'apartat anterior
-4.1. En aquest cas, ens centrarem en comprovar l'homogeneitat de les variàncies
-de les nostres variables objetiu respecte la variable principal
-*avg_total_price_eur_mwh* per mitjà del test de Bartlett:
+La normalitat de les variables numèriques es pot comprovar en l'apartat 4.1 on
+s'ha vist que la variable *avg_total_price_eur_mwh* no tenia una distribució
+normal. Tanmateix, en aquest cas, es comprovarà la normalitat per a cadascun
+dels grups de les variables *insolation_bin* i *avg_pressure_bin*. Per això,
+dividirem la variable *avg_total_price_eur_mwh* per grups:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Comprovem la homogeneïtat de les variàncies mitjançant el test de Bartlett
-aemet_dataset<-select(aemet_dataset, insolation_bin, avg_pressure_bin)
-bartlett.test(insolation_bin ~ avg_pressure_bin(supp,dose), data=ToothGrowth)
-bartlett.test(aemet_dataset$insolation_bin, aemet_dataset$avg_pressure_bin)
+# Dividim avg_total_price_eur_mwh en grups de avg_pressure_bin
+pressure_groups <- split(standard_num_vars, standard_num_vars$avg_pressure_bin)
 
-
-
-#bartlett.test(avg_total_price_eur_mwh ~ insolation_bin, data = aemet_dataset)
+# Dividim avg_total_price_eur_mwh en grups de insolation_bin
+insolation_groups <- split(standard_num_vars, standard_num_vars$insolation_bin)
 ```
 \normalsize
 
-El test de Bartlett s'utilitza per examinar si un nombre real i positiu de
-mostres d'una població té variàncies iguals. Aquest test també és conegut com a
-"homogeneïtat de variàncies", a diferència del test de Levene's utilitzat en
-l'apartat anterior que rebutja la hipòtesi nul·la per les variables numèriques
-que volem analitzar respecte la variable objectiu.
-
-**Proves estadístiques**
+Apliquem el test de normalitat *Anderson-Darling* respecte *avg_pressure_bin*.
+Aquest test és aplicable a mostres grans, ja qu` altres tests com *Shapiro*
+són més conservadors i poden rebutjar la hipòtesi nul·la malgrat la distribució 
+de les dades sigui normal.
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# Calculem la regressió logística entre les variables
-t.test(subset(aemet_dataset, insolation_bin=="10")$insolation_bin,subset(aemet_dataset, insolation_bin=="0-5")$insolation_bin)
+# Anderson-Darling test de avg_total_price_eur_mwh respecte avg_pressure_bin
+for (i in 1:length(pressure_groups)) {
+  print(ad.test(pressure_groups[[i]]$avg_total_price_eur_mwh))
+}
+```
+\normalsize
 
+Els resultats mostren com el valor p és inferior a 0.05, per tant, rebutjant la
+hipòtesi nul·la que confirmaria la normalitat de les distribucions. És a dir,
+les dades no estan distribuïdes normalment.
 
+Apliquem el test de normalitat *Anderson-Darling* respecte *insolation_bin*:
 
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Anderson-Darling test de avg_total_price_eur_mwh respecte insolation_bin
+for (i in 1:length(insolation_groups)) {
+  print(ad.test(insolation_groups[[i]]$avg_total_price_eur_mwh))
+}
+```
+\normalsize
 
-logistic_avg_price <- glm(avg_total_price_eur_mwh ~ avg_daily_temp + 
-                             insolation_bin +  avg_pressure_bin,
-                           data = downsampled_data, 
-                           family = binomial(link = logit))
+Altra vegada, es rebutja la hipòtesi nul·la, indicant que les distribucions dels
+diferents grups no són normals.
 
-summary(logistic_avg_price)
+Tot seguit, comprovem l'homogeneitat de les variàncies de 
+*avg_total_price_eur_mwh* respecte els grups de les variables *insolation_bin* i 
+*avg_pressure_bin*. Com hem vist, la variable  no té una distribució normal, 
+per tant, haurem d'aplicar el test de Levene que no es veu afectat pel tipus de 
+distribució:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Levene test de avg_total_price_eur_mwh respecte avg_pressure_bin
+leveneTest(avg_total_price_eur_mwh ~ avg_pressure_bin, data = standard_num_vars)
+
+# Levene test de avg_total_price_eur_mwh respecte insolation_bin
+leveneTest(avg_total_price_eur_mwh ~ insolation_bin, data = standard_num_vars)
+```
+\normalsize
+
+Els resultats retornen valors p menors a 0.05, rebutjant la hipòtesi nul·la.
+Això vol dir què les variàncies de *avg_total_price_eur_mwh* respecte els 
+diferents grups de *insolation_bin* i *avg_pressure_bin* no són homogènies.
+
+**Proves estadístiques**
+
+Volem comprovar si les distribucions dels diferents grups de 
+*avg_total_price_eur_mwh* en funció de *insolation_bin* i *avg_pressure_bin* són 
+iguals o no per analitzar la influència d'aquestes variables en el preu total
+de l'electricitat. Com que la distribció de *avg_total_price_eur_mwh* no és 
+normal i les variàncies no són uniformes, aplicarem el test de *Kruskal-Wallis* 
+que és un test paramètric adequat per aquest tipus de dades:
+
+\scriptsize
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(avg_total_price_eur_mwh ~ insolation_bin, data = standard_num_vars)
+kruskal.test(avg_total_price_eur_mwh ~ avg_pressure_bin, data = standard_num_vars)
 ```
 \normalsize
 
