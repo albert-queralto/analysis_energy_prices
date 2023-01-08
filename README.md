@@ -23,9 +23,11 @@ Queraltó i López**.
 
 ## Source Code
 
-* **PRA2.Rmd:** contains code and explanation for the main analysis done on energy prices.
-* **aemet_preprocessing.ipynb:** contains preprocessing data for AEMET dataset.
-* **data/aemet_data.zip:** contains all data downloaded for AEMET dataset.
+* **PRA2_preprocessing.Rmd:** contains code and explanation for the preprocessing part for both datasets.
+* **PRA2_final.Rmd:** contains code and explanation for the main analysis done on energy prices for both datasets.
+* **aemet_preprocessing.ipynb:** contains preprocessing data from AEMET dataset in order to obtain CSV file that will be used in *PRA2_preprocessing.Rmd*.
+* **aemet_preprocessing.csv:** contains preprocessing data from AEMET dataset.
+* **data/aemet_data.zip:** contains all data downloaded using the API from AEMET website.
 * **data/aemet_dictionary.txt:** contains dictionary especifically for AEMET dataset.
 * **data/esios_dataset.csv:** contains ESIOS dataset preprocessed in the first assignment delivery for the same subject.
 

@@ -1137,7 +1137,7 @@ grans que la resta de fonts d'energia.
 
 # Resolució del problema: Conclusions
 
-A l'inici de la pràctica ens plantejavem les següents hipòtesis a resoldre:
+A l'inici de la pràctica ens plantejàvem les següents hipòtesis a resoldre:
 
 - Analitzar l'evolució del preu de l'energia elèctrica a Espanya en el període
   de temps mencionat.
@@ -1160,6 +1160,10 @@ temperatures mitjanes més elevades, un menor percentatge de precipitació i un
 major nombre en la variable insolation, tendiràn a tenir una producció d'energia
 solar més elevada. Així mateix, les províncies amb una mitjana o màxima de velocitat 
 del vent més elevades tendiràn a tenir una producció d'energia eòlica superior.
+
+- Veiem com l'eòlica, la solar i l'hidroelèctrica són les energies renovables amb
+un impacte més rellevant sobre el preu de l'energia. Les energies nuclear i 
+termorenovable no presenten un pes tan significatiu respecte de la variable preu.
 
 
 # Contribucions
