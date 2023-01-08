@@ -1024,7 +1024,8 @@ Volem comprovar si les distribucions dels diferents grups de
 iguals o no per analitzar la influència d'aquestes variables en el preu total
 de l'electricitat. Com que la distribció de *avg_total_price_eur_mwh* no és 
 normal i les variàncies no són uniformes, aplicarem el test de *Kruskal-Wallis* 
-que és un test paramètric adequat per aquest tipus de dades:
+que és un test paramètric que compara les medianes de les distribucions per dos
+o més grups. Per tant, és adequat per aquest tipus de dades:
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -1033,6 +1034,11 @@ kruskal.test(avg_total_price_eur_mwh ~ avg_pressure_bin, data = standard_num_var
 ```
 \normalsize
 
+Observem doncs que els valors p dels tests respecte les variables *insolation_bin*
+i *avg_pressure_bin* són inferiors a 0.05. Per tant, hi ha una diferència prou
+significativa entre les medianes dels diferents grups, indicant que *insolation_bin*
+i *avg_pressure_bin* tenen una influència a l'hora de determinar el preu de 
+l'electricitat.
 
 # Resolució del problema: Conclusions
 
