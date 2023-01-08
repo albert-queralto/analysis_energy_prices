@@ -162,7 +162,7 @@ conservarem la segona. Així doncs, les columnes que es volen conservar són:
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Filtrem les columnes que no ens interessin
 esios_dataset <- esios_dataset %>% 
-  select(date, avg_total_price_eur_mwh, energy_total_mwh, energy_source, 
+  dplyr::select(date, avg_total_price_eur_mwh, energy_total_mwh, energy_source, 
          renewable_generation_perc, renewable_generation_perc_bin)
 
 # Mostrem les primeres files del dataset
@@ -351,7 +351,7 @@ doncs, les columnes que es volen conservar són: *date*, *province*,
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Filtrem les columnes que no ens interessin
-aemet_dataset <- aemet_dataset %>% select(date, province, avg_daily_temp, 
+aemet_dataset <- aemet_dataset %>% dplyr::select(date, province, avg_daily_temp, 
                                           daily_precipitation, avg_wind_speed, 
                                           max_wind_speed, insolation, avg_pressure, 
                                           avg_pressure_bin, insolation_bin)
@@ -580,7 +580,7 @@ num_vars <- c("avg_total_price_eur_mwh", "energy_total_mwh", "avg_daily_temp",
               "avg_wind_speed", "max_wind_speed", "insolation", "avg_pressure")
 
 # Subset del dataset amb les columnes numèriques sense la columna date
-subset_final <- final_dataset %>% select(all_of(num_vars))
+subset_final <- final_dataset %>% dplyr::select(all_of(num_vars))
 subset_final <- subset_final[,-1]
 
 # Estandarditzem les columnes numèriques (entre -1 i 1)
@@ -1050,7 +1050,7 @@ l'electricitat. Per això, crearem un subset de les dades on s'exclourà el valo
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Filtrem les dades per energy_source != total
-subset_energy_source_type_price <- select(standard_num_vars, energy_source,
+subset_energy_source_type_price <- dplyr::select(standard_num_vars, energy_source,
                                           renewable_generation_perc,
                                           avg_total_price_eur_mwh)
 subset_energy_source_type_price$energy_source <- factor(
