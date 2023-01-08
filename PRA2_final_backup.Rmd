@@ -775,8 +775,7 @@ s'observa certa correlació negativa entre les variables *max_wind_speed* i
 l'electricitat. Això pot estar degut a què l'energia eòlica és renovable i té un
 preu de producció més barat.
 
-## 4.2.  Anàlisi de *renewable_generation_perc_bin* en funció de la meteorologia
-## i *energy_source*
+## 4.2.  Anàlisi de *renewable_generation_perc_bin* en funció de la meteorologia i *energy_source*
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
@@ -931,8 +930,7 @@ que el model classifica millor la classe *0-35* tot i haver utilitzat un
 diferents categories de *renewable_generation_perc_bin*.
 
 
-## 4.3. Anàlisi i contrast d'hipòtesis de *avg_total_price_eur_mwh* respecte els
-## grups de *insolation_bin* i *avg_pressure_bin*.
+## 4.3. Anàlisi i contrast d'hipòtesis de *avg_total_price_eur_mwh* respecte els grups de *insolation_bin* i *avg_pressure_bin*.
 
 **Selecció dels grups de dades i tipus d'anàlisi**
 
@@ -1050,6 +1048,11 @@ temperatures mitjanes més elevades, un menor percentatge de precipitació i un
 major nombre en la variable insolation, tendiràn a tenir una producció d'energia
 solar més elevada. Així mateix, les províncies amb una mitjana o màxima de velocitat 
 del vent més elevades tendiràn a tenir una producció d'energia eòlica superior.
+
+- Podem veure com la font d'energia que té un impacte més rellevant en el preu de
+l'energia és
+
+- ???
 
 
 # Contribucions

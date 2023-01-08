@@ -19,7 +19,7 @@ Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
 \scriptsize
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi 
 # exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "tidyverse", 
@@ -48,7 +48,7 @@ pràctica mitjançant webscrapping de la web https://www.esios.ree.es/es/
 per les províncies d'Espanya i extretes de la web https://opendata.aemet.es/
 (*dataset AEMET*) utilitzant l'API proporcionada.
 
-# 2. Preprocessat dels datasets
+# 2. Integració i selecció
 
 ## 2.1. Càrrega, preprocessat i selecció del dataset ESIOS
 
@@ -82,8 +82,7 @@ colnames(esios_dataset) <- c("date", "hour", "avg_total_price_eur_mwh",
                               "renewable_generation_mw")
                               
 # Taula resum que representa les principals característiques de les diferents 
-# variables 
-str(esios_dataset)
+variables str(esios_dataset)
 ```
 \normalsize
 
@@ -549,7 +548,7 @@ Representem també la distribució de les dades per les variables *min_pressure*
 *max_pressure* i *avg_pressure*:
 
 \scriptsize
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.height=5, fig.width=14, fig.align='center'}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Histograma de la pressió
 ggplot(aemet_dataset, aes(x = min_pressure)) + 
   geom_density(fill = "blue", color = "black", alpha = 0.5) +
@@ -562,7 +561,7 @@ ggplot(aemet_dataset, aes(x = min_pressure)) +
                     labels = c("Mínima", "Màxima", "Mitjana")) +
   labs(title = "Distribució de la pressió") +
   theme_bw() +
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 30))
 ```
 \normalsize
 
@@ -588,9 +587,7 @@ el nivell del mar. Hi ha tres categories principals:
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Discretització de la pressió
-aemet_dataset <- aemet_dataset %>% mutate(avg_pressure_bin = cut(avg_pressure, 
-                            breaks = c(-Inf, 1010, 1015, Inf), 
-                            labels = c("Depression", "Normal", "Anticyclone")))
+aemet_dataset <- aemet_dataset %>% mutate(avg_pressure_bin = cut(avg_pressure, breaks = c(-Inf, 1010, 1015, Inf), labels = c("Depression", "Normal", "Anticyclone")))
 ```
 \normalsize
 
@@ -601,9 +598,7 @@ La variable *insolation* es discretitzarà en 3 intervals de 5 hores cadascun:
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Discretització de la insolació
-aemet_dataset <- aemet_dataset %>% mutate(insolation_bin = cut(insolation, 
-                                            breaks = c(-Inf, 0, 5, Inf), 
-                                            labels = c("0-5", "5-10", "10+")))
+aemet_dataset <- aemet_dataset %>% mutate(insolation_bin = cut(insolation, breaks = c(-Inf, 0, 5, Inf), labels = c("0-5", "5-10", "10+")))
 ```
 \normalsize
 
@@ -614,7 +609,6 @@ Guardem el dataset AEMET preprocessat en un fitxer CSV:
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Guardem el dataset AEMET preprocessat en un fitxer CSV
-write.csv(aemet_dataset, file = "data/aemet_dataset_preprocessed.csv", 
-          row.names = FALSE)
+write.csv(aemet_dataset, file = "data/aemet_dataset_preprocessed.csv", row.names = FALSE)
 ```
 \normalsize
