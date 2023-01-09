@@ -20,7 +20,7 @@ geometry: "left=1.5cm, right=1.5cm, top=2cm, bottom=1.5cm"
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "caret", "corrplot", 
               "Hmisc", "rpart", "rpart.plot", "useful", "ROCR", "precrec", "knitr", 
