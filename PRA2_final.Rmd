@@ -1130,10 +1130,16 @@ summary(lad)
 ```
 \normalsize
 
-Els resultats del model indiquen que l'energia èolica i la nuclear tenen una
-influència més elevada en el preu del MWh respecte el valor de referència 
-(l'energia hidroelèctrica), ja que tenen coeficients positius i amb valors més 
-grans que la resta de fonts d'energia.
+Els resultats del model indiquen que el percentatge d'energia renovable
+contribueix a reduir el preu del MWh. De les diferents fonts, l'energia èolica i 
+la nuclear tenen una influència més elevada en el preu de l'electricitat 
+respecte el valor de referència (l'energia hidroelèctrica), ja que tenen 
+coeficients positius i amb valors més grans que la resta de fonts d'energia.
+Aquests coeficients positius semblen indicar que el preu augmentaria. Això
+podria ser degut a la fluctuació en la producció eòlica i al preu més car de la
+producció d'energia nuclear respecte la resta de renovables. També podria haver-hi
+una influència d'algun factor que no s'ha tingut en compte com la producció
+d'energia en les centrals de cicle combinat que consumeixen gas natural.
 
 # Resolució del problema: Conclusions
 
@@ -1161,9 +1167,23 @@ major nombre en la variable insolation, tendiràn a tenir una producció d'energ
 solar més elevada. Així mateix, les províncies amb una mitjana o màxima de velocitat 
 del vent més elevades tendiràn a tenir una producció d'energia eòlica superior.
 
-- Veiem com l'eòlica, la solar i l'hidroelèctrica són les energies renovables amb
-un impacte més rellevant sobre el preu de l'energia. Les energies nuclear i 
-termorenovable no presenten un pes tan significatiu respecte de la variable preu.
+- Veiem com l'eòlica i la solar són les energies renovables amb un impacte més 
+rellevant sobre la producció d'energia renovables respecte l'energia
+hidroelèctrica, nuclear i termorenovable.
+
+- També hem observat que la meteorologia té una certa influència en el preu del 
+MWh, en particular la insolació i la pressió promig, tal i com mostra el test
+de Kruskal-Wallis.
+
+- El percentatge d'energia renovable contribueix a reduir el preu del MWh. 
+De les diferents fonts, l'energia èolica i la nuclear tenen una influència més 
+elevada en el preu de l'electricitat degut a la fluctuació en la producció eòlica 
+i al preu més car de la producció d'energia nuclear respecte la resta de renovables. 
+
+- Finalment, en aquest anàlisi podria haver-hi una influència d'algun factor que 
+no s'ha tingut en compte com la producció d'energia en les centrals de cicle 
+combinat que consumeixen gas natural, el preu del qual s'ha disparat en els
+últims mesos o a l'especulació dels mercats.
 
 
 # Contribucions
