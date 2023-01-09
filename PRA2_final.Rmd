@@ -20,7 +20,7 @@ geometry: "left=1.5cm, right=1.5cm, top=2cm, bottom=1.5cm"
 Primer de tot, carregarem algunes llibreries que podríem necessitar per crear
 els diferents models, analitzar-los i generar gràfics.
 
-```{r libraries, message=FALSE, warning=FALSE, include=FALSE, results='hide'}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Instal·lem i/o carreguem les llibreries utilitzades per fer l'anàlisi exploratòria de les dades
 packages <- c("ggplot2", "plyr", "dplyr", "stats", "lmtest", "caret", "corrplot", 
               "Hmisc", "rpart", "rpart.plot", "useful", "ROCR", "precrec", "knitr", 
@@ -1170,8 +1170,14 @@ termorenovable no presenten un pes tan significatiu respecte de la variable preu
 
 \scriptsize
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-df <- data.frame(Contribucions=rep(c('Investigació prèvia', 'Redacció de les respostes', 'Desenvolupament del codi', 'Participació al vídeo'), each=1),
-                 Signatura=rep(c('Albert Queraltó, Esther Manzano', 'Albert Queraltó,     Esther Manzano', 'Albert Queraltó, Esther Manzano', 'Albert Queraltó, Esther Manzano'), times=1))
+df <- data.frame(Contribucions=rep(c('Investigació prèvia', 
+                                     'Redacció de les respostes', 
+                                     'Desenvolupament del codi', 
+                                     'Participació al vídeo'), each=1),
+                 Signatura=rep(c('Albert Queraltó, Esther Manzano', 
+                                 'Albert Queraltó, Esther Manzano', 
+                                 'Albert Queraltó, Esther Manzano', 
+                                 'Albert Queraltó, Esther Manzano'), times=1))
 
 df
 ```
